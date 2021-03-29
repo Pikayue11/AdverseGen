@@ -1,3 +1,8 @@
 # Advanced_Experiment_II
 
-run main
+you need to execute following command first
+
+pip3 install PySimpleGUI
+
+pip install pillow
+
