@@ -5,6 +5,8 @@ import os
 width = 400
 height = 300
 path = ''
+newPath = ''
+checked = False
 
 def savePng(path):
     if os.path.exists(path) == False:
@@ -32,8 +34,6 @@ def savePng(path):
 Check_image = sg.Button('Check image', key='-ci-')
 Comfirm_all = sg.Button('Comfirm all', key='-ca-')
 Quit = sg.Button('Quit', key='-quit-')
-##############
-w2_b1 = sg.Button('w2_b1',key = 'w2-b1')
 #   text
 title = sg.Text('Our tool box',key='-title-',justification='center')
 t1 = sg.Text('Please select network and database',key='-t1-')
@@ -54,38 +54,35 @@ p1 = sg.Image(size=(width,height),key='-image1-')
 p2 = sg.Image(size=(width,height),key='-image2-')
 # input
 queryLimit = sg.InputText(size=(10,5),key='ql')
-#   output
-s1 = sg.Output(size=(60, 5))
+# output
+output1 = sg.Output(size=(60, 5))
+output2 = sg.Output(size=(120, 10))
 # , enter_submits=True
-#   progressBar
-pb = sg.ProgressBar(1000, orientation='h', size=(45, 10), key='progressbar')
+#   progressBar 进度条
+pb = sg.ProgressBar(1000, orientation='h', size=(40, 10), key='progressbar')
 
 
-left_column = [[title],
+layout1 = [[title],
                [t1],
                [database,network,evaluation,attackMode],
                 [t2],
                [i1,f1],
                [t3,queryLimit,t4],
                [Check_image,Comfirm_all,Quit],
-               [s1],
+               [output1],
                [t5],
                [pb]]
-right_column = [[p1],[p2]]
 
+left_image = [[p1]]
+right_image = [[p2]]
 
-layout1 = [[sg.Column(left_column),
+layout2 = [[sg.Column(left_image),
             sg.VSeperator(),
-            sg.Column(right_column)]]
-
-
-
-# window1 = sg.Window('Window 1', layout1,size=(800,600))
+            sg.Column(right_image)],
+           [output2]]
 
 window1 = sg.Window('Our tool box', layout1)
 win2_active = False
-
-
 
 while True:
     event1, values1 = window1.read(timeout=100)
@@ -93,13 +90,23 @@ while True:
     if event1 in (None, '-quit-'):
         break
 
-    if not win2_active and event1 == '-ca-':# comfirm all
+    if not win2_active and event1 == '-ca-' and newPath != '':# comfirm all
         print('here is Comfirm all xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        win2_active = True
+        window2 = sg.Window('Warning', layout2,finalize=True)
+        window2['-image1-'].update(filename=newPath)
+        window2['-image2-'].update(filename=newPath)
+        print('this is the result of adversarial attack')
 
+    if win2_active:
+        events2, values2 = window2.Read(timeout=100)
+        if events2 is None:
+            win2_active = False
+            window2.close()
 
     if not win2_active and event1 == '-ci-':# check image
         path = i1.get()
-        print('here is check image xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        print('here is check image')
         if(path == ''):
             print('path is empty')
         else:
@@ -108,22 +115,8 @@ while True:
                 print('Warning! Please enter a correct image path!')
             else:
                 print('checked, the label of this image is: tiger')
-                window1['-image1-'].update(filename=newPath)
-                window1['-image2-'].update(filename=newPath)
 
 
 
-    # if not win2_active and event1 == 'b4':
-    #     win2_active = True
-    #     layout2 = [[sg.Text('Warning please xxxxxxxxxxxxxx')],
-    #                [sg.Button('w2_b1')]]
-    #
-    #     window2 = sg.Window('Warning', layout2)
-    #
-    # if win2_active:
-    #     events2, values2 = window2.Read(timeout=100)
-    #     if events2 is None or events2 == 'w2_b1':
-    #         win2_active = False
-    #         window2.close()
 
 window1.close()
