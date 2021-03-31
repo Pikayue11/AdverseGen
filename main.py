@@ -4,20 +4,29 @@ import os
 
 width = 400
 height = 300
+path = ''
 
 def savePng(path):
+    if os.path.exists(path) == False:
+        return ''
     folder_name = 'pngs/'
     file_name = os.path.basename(path)
     if file_name[-3:].lower() == 'jpg':
         file_name = file_name[:-3]
-    if file_name[-4:].lower() == 'jpeg':
+    elif file_name[-4:].lower() == 'jpeg':
         file_name = file_name[:-4]
+    elif file_name[-3:].lower() == 'png':
+        file_name = file_name[:-3]
+    else:
+        return ''
     file_name += 'png'
     im = Image.open(path)
     im = im.resize((width,height))
     newPath = folder_name + file_name
     im.save(newPath)
     return newPath
+
+
 
 #   button
 Check_image = sg.Button('Check image', key='-ci-')
@@ -27,8 +36,8 @@ Quit = sg.Button('Quit', key='-quit-')
 w2_b1 = sg.Button('w2_b1',key = 'w2-b1')
 #   text
 title = sg.Text('Our tool box',key='-title-',justification='center')
-t1 = sg.Text('Please select xxxxxxxxxxx',key='-t1-')
-t2 = sg.Text('Please choose a jpg/jpeg/png picture',key='-t2-')
+t1 = sg.Text('Please select network and database',key='-t1-')
+t2 = sg.Text('Please choose a jpg/jpeg/png picture in your computer',key='-t2-')
 t3 = sg.Text('Max queries',key='-t3-')
 t4 = sg.Text('recommend: 100000-200000',key='-t4-')
 t5 = sg.Text('progress bar',key='-t5-')
@@ -63,9 +72,13 @@ left_column = [[title],
                [t5],
                [pb]]
 right_column = [[p1],[p2]]
+
+
 layout1 = [[sg.Column(left_column),
             sg.VSeperator(),
             sg.Column(right_column)]]
+
+
 
 # window1 = sg.Window('Window 1', layout1,size=(800,600))
 
@@ -80,22 +93,23 @@ while True:
     if event1 in (None, '-quit-'):
         break
 
-    if not win2_active and event1 == '-ca-':
-        print('here is Comfirm all')
+    if not win2_active and event1 == '-ca-':# comfirm all
+        print('here is Comfirm all xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
 
 
-    if not win2_active and event1 == '-ci-':
+    if not win2_active and event1 == '-ci-':# check image
         path = i1.get()
-        print('here is check image')
+        print('here is check image xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
         if(path == ''):
             print('path is empty')
         else:
             newPath = savePng(path)
-            window1['-image1-'].update(filename=newPath)
-            window1['-image2-'].update(filename=newPath)
-
-
-
+            if newPath == '':
+                print('Warning! Please enter a correct image path!')
+            else:
+                print('checked, the label of this image is: tiger')
+                window1['-image1-'].update(filename=newPath)
+                window1['-image2-'].update(filename=newPath)
 
 
 
