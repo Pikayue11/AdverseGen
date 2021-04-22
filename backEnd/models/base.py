@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import copy
 import eagerpy as ep
 
-from ..types import Bounds, BoundsInput, Preprocessing
+from ..attack_types import Bounds, BoundsInput, Preprocessing
 from ..devutils import atleast_kd
 
 
