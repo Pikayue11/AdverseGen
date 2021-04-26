@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from resnet import ResNet18
-import cornersearch_attacks_pt
+from .cornersearch_attacks_pt import CSattack
 
 device = ('cuda' if torch.cuda.is_available() else 'cpu')
 classes = ('plane', 'car', 'bird', 'cat','deer', 'dog', 'frog', 'horse', 'ship', 'truck')
@@ -38,7 +38,7 @@ def run_loop_attack(model, trans_images, ori_labels):
             'epsilon': -1,
             'sparsity': 10,
             'size_incr': 1}
-    attack = cornersearch_attacks_pt.CSattack(model, args)
+    attack = CSattack(model, args)
     new_trans_images, L0_norms = attack.perturb(trans_images, ori_labels)
     return new_trans_images, L0_norms
 
@@ -47,7 +47,6 @@ def recover_images(trans_images):
     images = images.astype(np.uint8)
     return images
 
-
 def get_success(label1, label2):    # non-target
     n = label1.shape[0]
     success = np.zeros((n))
@@ -55,19 +54,26 @@ def get_success(label1, label2):    # non-target
         if label1[i] != label2[i]:
             success[i] = 1
     return success
+
 def L0_api(images_arr):  # images:  [ n, 32 ,32 , 3]
     # load model, resnet18, pretrained on cifar-10
     model = load_model_L0()
+
     # process data and save them into x_test [n,32,32,3], save the label of x_test in y_test [n]
     trans_images = data_preprocess(images_arr)
+
     # get original label
     ori_labels = get_labels(trans_images, model)
+
     # run attack, adv save the trans_images after attack
     new_trans_images, L0_norms = run_loop_attack(model, trans_images, ori_labels)
+
     # the labels after attack
     new_labels = get_labels(new_trans_images, model)
+
     # the Adversarial Examples
     new_images = recover_images(new_trans_images)
+
     # if a picture's attack is success, the success will be 1
     success = get_success(ori_labels,new_labels)
 

@@ -2,7 +2,8 @@
 # import scipy.io
 import numpy as np
 # import torch
-from utils_pt import get_logits, get_predictions
+from .utils_pt import get_logits, get_predictions
+
 
 def onepixel_perturbation(attack, orig_x, pos, sigma):
   ''' returns a batch with the possible perturbations of the pixel in position pos '''

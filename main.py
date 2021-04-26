@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import util_gui as gui
 import numpy as np
-import L0_attack.L0_API as l0
+from PIL import Image
 
 N = 1
 path = ''
@@ -38,7 +38,7 @@ p2 = sg.Image(key='-adv_image-')
 #   input
 queryLimit = sg.InputText(size=(10,5),key='ql')
 #   output
-s1 = sg.Output(size=(60, 5))
+# s1 = sg.Output(size=(60, 5))
 
 #   ProgressBar
 pb = sg.ProgressBar(1000, orientation='h', size=(45, 10), key='progressbar')
@@ -51,7 +51,7 @@ left_column = [
                [i1,f1],
                # [t3,queryLimit],
                [Check_image,Comfirm_all,Quit],
-               [s1],
+               # [s1],
                [t5],
                [pb]]
 
@@ -73,7 +73,8 @@ while True:
         break
 
     if not win2_active and event1 == '-ca-':    # click comfirm all
-        print('here is Comfirm all xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        adv_newPath = gui.AE_L0(ori_newPath)
+        window1['-adv_image-'].update(size=(II.width, II.height), filename=adv_newPath)
 
     if not win2_active and event1 == '-ci-':    # click check image
         path = window1['-ImagePath-'].get()
@@ -85,9 +86,14 @@ while True:
             if ori_newPath == '':
                 print('Warning! Please enter a correct image path!')
             else:
-                print('checked, the label of this image is: tiger')
+                ori_images = gui.getImage(ori_newPath)
+                ori_label_id = gui.getLabel(ori_images)
+                ori_label_name = II.labels[int(ori_label_id)]
+                print("The label of the original image is ", ori_label_name)
+
                 window1['-ori_image-'].update(size=(II.width, II.height), filename=ori_newPath)
-                window1['-adv_image-'].update(size=(II.width, II.height), filename=ori_newPath)
+
+
 
 
 window1.close()
