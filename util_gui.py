@@ -34,11 +34,11 @@ def getImage(path):
     return UpDimension(ori_image)
 
 def AE_L0(images):     # work for single image
-    _, new_images, _, _, _ = l0.L0_api(images)
+    _, new_images, new_labels, L0_norms, success = l0.L0_api(images)
     im = Image.fromarray(new_images[0])
     image_path = 'AdvResults/new_test1.png'
     im.save(image_path)
-    return image_path
+    return image_path, new_labels[0], L0_norms[0], success[0]
 
 def getLabel(images):
     images = l0.data_preprocess(images)

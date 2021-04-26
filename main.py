@@ -73,7 +73,10 @@ while True:
         break
 
     if not win2_active and event1 == '-ca-':    # click comfirm all
-        adv_newPath = gui.AE_L0(ori_newPath)
+        adv_newPath, adv_label_id, norm, success = gui.AE_L0(ori_images)
+        adv_label_name = II.labels[int(adv_label_id)]
+        print("The label of the original image is", adv_label_name)
+        print("The norm value is: ", norm)
         window1['-adv_image-'].update(size=(II.width, II.height), filename=adv_newPath)
 
     if not win2_active and event1 == '-ci-':    # click check image
@@ -89,12 +92,9 @@ while True:
                 ori_images = gui.getImage(ori_newPath)
                 ori_label_id = gui.getLabel(ori_images)
                 ori_label_name = II.labels[int(ori_label_id)]
-                print("The label of the original image is ", ori_label_name)
+                print("The label of the original image is", ori_label_name)
 
                 window1['-ori_image-'].update(size=(II.width, II.height), filename=ori_newPath)
-
-
-
 
 window1.close()
 

@@ -42,9 +42,6 @@ for i in range(N):
 
 
 
-
-
-
 # not important test:  get labels
 
 # model = l0.load_model_L0()

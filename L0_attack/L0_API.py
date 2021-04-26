@@ -4,7 +4,7 @@ from resnet import ResNet18
 from .cornersearch_attacks_pt import CSattack
 
 device = ('cuda' if torch.cuda.is_available() else 'cpu')
-classes = ('plane', 'car', 'bird', 'cat','deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+# classes = ('plane', 'car', 'bird', 'cat','deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 def load_model_L0():
     model = ResNet18().to(device)
@@ -17,7 +17,7 @@ def load_model_L0():
     return model
 
 def data_preprocess(image_arr):     # images:  [ n, 32 ,32 , 3]
-    return image_arr/255
+    return image_arr/255.0
 
 def get_labels(trans_images, model):
     x_test_t = torch.from_numpy(trans_images).permute(0, 3, 1, 2).float()
