@@ -2,6 +2,9 @@ from PIL import Image
 import numpy as np
 import L0_attack.L0_API as l0
 import os
+import time
+
+runningFlag = 0
 
 # to change the user upload image from jpg/jpeg into pngs format
 # becase simpleGUI can only display .png or .gif images
@@ -43,6 +46,26 @@ def AE_L0(images):     # work for single image
 def getLabel(images):
     images = l0.data_preprocess(images)
     return l0.get_labels(images,model = l0.load_model_L0())[0]
+
+
+def getAdvPath(ori_images, imageInfo, window1):
+    adv_newPath, adv_label_id, norm, success = AE_L0(ori_images)
+    adv_label_name = imageInfo.labels[int(adv_label_id)]
+    print("The label of the original image is", adv_label_name)
+    print("The norm value is: ", norm)
+
+    window1['-t6-'].update('Status: free            ')
+    window1['-adv_image-'].update(size=(imageInfo.width, imageInfo.height), filename=adv_newPath)
+
+def updateRunning(window1):
+    status = ['States: running   ', 'States: running.  ', 'States: running.. ', 'States: running...']
+    cnt = 1
+    while window1['-t6-'].get()[0:18] in status:
+        window1['-t6-'].update(status[cnt])
+        cnt = cnt + 1
+        cnt = cnt % 4
+        time.sleep(1)
+
 
 
 class ImageInfo():
