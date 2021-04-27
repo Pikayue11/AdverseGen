@@ -89,6 +89,7 @@ def mainWindow():
         if event1 in (None, '-stop-'):  # click quit
             for i in threads:
                 tc._async_raise(i.ident, SystemExit)
+            threads = []
             window1['-t6-'].update('States: free          ')
             window1['-ori_image-'].update()
             window1['-adv_image-'].update()
