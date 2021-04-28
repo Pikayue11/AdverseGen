@@ -51,7 +51,7 @@ def getLabel(images):
 def getAdvPath(ori_images, imageInfo, window1):
     adv_newPath, adv_label_id, norm, success = AE_L0(ori_images)
     adv_label_name = imageInfo.labels[int(adv_label_id)]
-    print("The label of the original image is", adv_label_name)
+    print("The label of the adversarial image is", adv_label_name)
     print("The norm value is: ", norm)
 
     window1['-t6-'].update('Status: free            ')

@@ -1,9 +1,7 @@
 import PySimpleGUI as sg
 import util_gui as gui
-import numpy as np
 import threading
 import Thread_control as tc
-import time
 
 # N = 1
 # imageArr = np.zeros((N,32,32,3))
@@ -58,7 +56,7 @@ left_column = [
                [i1,f1],
                # [t3,queryLimit],
                [Check_image,Comfirm_all, Stop, Clear, Quit],
-               # [s1],
+               [s1],
                # [t5],
                # [pb],
                [t6]
@@ -123,7 +121,7 @@ while True:
             t2.start()
 
         else:
-            print('There is someing running, please wait')
+            print('There is something running, please wait')
 
 window1.close()
 
