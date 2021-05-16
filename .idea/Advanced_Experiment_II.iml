@@ -3,6 +3,9 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/backEnd" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/backEnd/toolkit/attacks/L0_attack" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/SSIM_attack" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
