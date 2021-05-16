@@ -19,7 +19,7 @@ def onepixel_perturbation(attack, orig_x, pos, sigma):
         batch_x[counter,pos[0],pos[1]] = t.astype(np.float32)
     elif orig_x.shape[-1] == 1:
       batch_x = np.tile(orig_x,(2,1,1,1))
-      batch_x[0,pos[0],pos[1],0] = 0.0
+      batch_x[0,pos[0],pos[1],0] = 0.0 
       batch_x[1,pos[0],pos[1],0] = 1.0
   
   elif attack.type_attack == 'L0+Linf':
