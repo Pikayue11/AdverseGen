@@ -1,7 +1,6 @@
 import os
 import random
 import numpy as np
-from skimage.measure import compare_ssim
 from skimage.metrics import _structural_similarity as ss
 from SSIM_grad import build_ssim_graph
 

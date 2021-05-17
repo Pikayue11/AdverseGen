@@ -26,25 +26,32 @@ elif N == 2:
 # This is the most import function, run about 2-3 minutes for 1 image *******
 # cifar_10_classes = ('plane', 'car', 'bird', 'cat','deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-ori_labels, new_images, new_labels, L0_norms, success = l0.L0_api(images)
+# ori_labels, new_images, new_labels, L0_norms, success = l0.L0_api(images)
+#
+# print(ori_labels)
+# print(new_labels)
+# print(L0_norms)
+# print(success)
+#
+# image_name = ['results/new_img1.jpg','results/new_img2.jpg']
+# for i in range(N):
+#     im = Image.fromarray(new_images[i])
+#     im.save(image_name[i])
 
-print(ori_labels)
-print(new_labels)
-print(L0_norms)
-print(success)
+model = l0.load_model_L0()
+#
+#     # process data and save them into x_test [n,32,32,3], save the label of x_test in y_test [n]
+trans_images = l0.data_preprocess(images)
+#
+#
+#     # get original label
+a,b,c = l0.get_con(trans_images, model,1)
 
-image_name = ['results/new_img1.jpg','results/new_img2.jpg']
-for i in range(N):
-    im = Image.fromarray(new_images[i])
-    im.save(image_name[i])
-
-
+print(a)
+print('first %.4f' % (b))
+print(b)
+print(c)
 
 
 
 # not important test:  get labels
-
-# model = l0.load_model_L0()
-# trans_images = l0.data_preprocess(images)
-# labels = l0.get_labels(trans_images, model)
-# print(labels)

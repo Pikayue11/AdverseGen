@@ -2,7 +2,9 @@
 # import scipy.io
 import numpy as np
 # import torch
-from .utils_pt import get_logits, get_predictions
+from utils_pt import get_logits, get_predictions
+
+
 
 def onepixel_perturbation(attack, orig_x, pos, sigma):
   ''' returns a batch with the possible perturbations of the pixel in position pos '''
@@ -160,8 +162,8 @@ class CSattack():
     self.k = args['sparsity']              # maximum number of pixels that can be modified (k_max in the paper)
     self.size_incr = args['size_incr']     # size of progressive increment of sparsity levels to check  
   
-  def perturb(self, x_nat, y_nat):
-
+  def perturb(self, getCon, x_nat, y_nat):
+    adv_fd = np.zeros((1,32,32,3))
     y_nat = y_nat.astype(np.uint8)
 
     adv = np.copy(x_nat)
@@ -183,16 +185,23 @@ class CSattack():
         found = False
         
         # checks one-pixels modifications
+        print('*** Searching one-pixel solution ***')
         for counter in range(self.n_corners):
           #logit_2[counter*bs:(counter+1)*bs], pred = sess.run([self.model.y, self.model.correct_prediction], feed_dict={self.model.x_input: batch_x[counter*bs:(counter+1)*bs], self.model.y_input: np.tile(batch_y,(bs))})
           logit_2[counter*bs:(counter+1)*bs] = get_logits(self.model, batch_x[counter*bs:(counter+1)*bs])
           pred = logit_2[counter*bs:(counter+1)*bs].argmax(axis=-1) == np.tile(batch_y,(bs))
+          adv_fd[0] = adv[c]
+          origin_con, second_con, second_label = getCon(adv_fd, y_nat[c])
+          print('Origin %.4f, second max %.4f, origin label %d, second label %d' % (origin_con, second_con, y_nat[c], second_label))
+
           if not pred.all() and not found:
             ind_adv = np.where(pred.astype(int)==0)
             adv[c] = batch_x[counter*bs + ind_adv[0][0]]
             found = True
             # print('Point {} - adversarial example found changing 1 pixel'.format(c))
-        
+
+
+
         # creates the orderings
         t1 = np.copy(logit_2[:, batch_y])
         logit_2[:, batch_y] = -1000.0*np.ones(np.shape(logit_2[:, batch_y]))
@@ -201,11 +210,19 @@ class CSattack():
         logit_3 = np.tile(np.expand_dims(t1,axis=1),(1,self.n_classes))-logit_2
         logit_3[:, batch_y] = t3
         ind = np.argsort(logit_3, axis=0)
-        
+        if found:
+          print('*** Found an one-pixel solution')
+        else:
+          print('*** Fail to find one-pixel solution, start to search multiple-pixels solution')
         # checks multiple-pixels modifications
         for n3 in range(1 + self.size_incr, self.k + 1, self.size_incr):
+
           if not found:
              for c2 in range(self.n_classes):
+               adv_fd[0] = adv[c]
+               origin_con, second_con, second_label = getCon(adv_fd, y_nat[c])
+               print('Origin %.4f, second max %.4f, origin label %d, second label %d' % (
+               origin_con, second_con, y_nat[c], second_label))
                if not found:
                  ind_cl = np.copy(ind[:, c2])
 

@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from resnet import resnet18
+from resnet_SSIM import resnet18
 from torchvision import transforms
 from PQP_attack import attack_classifier
 
