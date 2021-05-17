@@ -34,13 +34,17 @@ def get_con(one_trans_image, model, ori_label): # 1, 32, 32, 3; get the max conf
     with torch.no_grad():
         y_test = model(x_test_t.to(device))
     cons = torch.nn.Softmax(dim=1)(y_test)
+
+    print(cons)
     origin_con = cons[0][ori_label]
-    save_max_index = cons[0].argmax()
-    save_max = cons[0].max()
-    cons[0][save_max_index] = -1
+    max_index = cons[0].argmax()
+    max = cons[0].max()
+    cons[0][max_index] = 0
+
     second_max = cons[0].max()
     second_max_index = cons[0].argmax()
-    cons[0][save_max_index] = save_max
+
+    cons[0][max_index] = max
     return origin_con, second_max, second_max_index
 
 def run_loop_attack(model, trans_images, ori_labels):

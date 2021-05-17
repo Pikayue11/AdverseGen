@@ -56,7 +56,7 @@ left_column = [
                [i1,f1],
                # [t3,queryLimit],
                [Check_image,Comfirm_all, Stop, Clear, Quit],
-               [s1],
+               # [s1],
                # [t5],
                # [pb],
                [t6]
