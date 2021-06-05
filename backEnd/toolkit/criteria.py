@@ -105,11 +105,14 @@ class TargetedMisclassification(Criterion):
     """Considers those perturbed inputs adversarial whose predicted class
     matches the target class.
     Args:
+        labels: Tensor with labels of the unperturbed inputs ``(batch,)``.
         target_classes: Tensor with target classes ``(batch,)``.
+
     """
 
-    def __init__(self, target_classes: Any):
+    def __init__(self, labels: Any, target_classes: Any):
         super().__init__()
+        self.labels: ep.Tensor = ep.astensor(labels)
         self.target_classes: ep.Tensor = ep.astensor(target_classes)
 
     def __repr__(self) -> str:
