@@ -7,22 +7,15 @@ import numpy as np
 
 device = ('cuda' if torch.cuda.is_available() else 'cpu')
 def get_logits(model, x_nat):
-    x = torch.from_numpy(x_nat).permute(0, 3, 1, 2).float()
-    
     with torch.no_grad():
-        output = model(x.to(device))
-    
-    return output.cpu().numpy()
-
-
+        output = model(x_nat)
+    return output
 
 def get_predictions(model, x_nat, y_nat):
-    x = torch.from_numpy(x_nat).permute(0, 3, 1, 2).float()
-    y = torch.from_numpy(y_nat)
-    with torch.no_grad():
-        output = model(x.to(device))
 
-    return (output.cpu().max(dim=-1)[1] == y).numpy()
+    with torch.no_grad():
+        output = model(x_nat)
+    return np.argmax(output, axis=-1) == y_nat
 
 def get_predictions_and_gradients(model, x_nat, y_nat):
     x = torch.from_numpy(x_nat).permute(0, 3, 1, 2).float()
