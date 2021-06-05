@@ -23,7 +23,7 @@ def get_labels(trans_images, model):
     x_test_t = torch.from_numpy(trans_images).permute(0, 3, 1, 2).float()
     with torch.no_grad():
         y_test = model(x_test_t.to(device))
-    y_test = y_test.numpy()
+    y_test = y_test.cpu().numpy()
     labels = np.zeros((trans_images.shape[0]))
     for i in range(trans_images.shape[0]):
         labels[i] = y_test[i].argmax()

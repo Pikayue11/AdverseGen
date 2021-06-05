@@ -2,16 +2,16 @@ from typing import Callable, TypeVar, Any, Union, Optional, Sequence, List, Tupl
 from typing_extensions import final, overload
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-import eagerpy as ep
 
-from toolkit.models import Model
+import numpy as np
 
-from toolkit.criteria import Criterion
-from toolkit.criteria import Misclassification
+from ..models import Model
 
-from toolkit.devutils import atleast_kd
+from ..criteria import Criterion, Misclassification
 
-from toolkit.distances import Distance
+from ..devutils import atleast_kd
+
+from ..distances import Distance
 
 
 T = TypeVar("T")
@@ -77,126 +77,127 @@ class AttackWithDistance(Attack):
         ...
 
     def repeat(self, times: int) -> Attack:
-        return Repeated(self, times)
-
-
-class Repeated(AttackWithDistance):
-    """Repeats the wrapped attack and returns the best result"""
-
-    def __init__(self, attack: AttackWithDistance, times: int):
-        if times < 1:
-            raise ValueError(f"expected times >= 1, got {times}")  # pragma: no cover
-
-        self.attack = attack
-        self.times = times
-
-    @property
-    def distance(self) -> Distance:
-        return self.attack.distance
-
-    @overload
-    def __call__(
-        self,
-        model: Model,
-        inputs: T,
-        criterion: Any,
-        *,
-        epsilons: Sequence[Union[float, None]],
-        **kwargs: Any,
-    ) -> Tuple[List[T], List[T], T]:
         ...
+        # return Repeated(self, times)
 
-    @overload  # noqa: F811
-    def __call__(
-        self,
-        model: Model,
-        inputs: T,
-        criterion: Any,
-        *,
-        epsilons: Union[float, None],
-        **kwargs: Any,
-    ) -> Tuple[T, T, T]:
-        ...
 
-    def __call__(  # noqa: F811
-        self,
-        model: Model,
-        inputs: T,
-        criterion: Any,
-        *,
-        epsilons: Union[Sequence[Union[float, None]], float, None],
-        **kwargs: Any,
-    ) -> Union[Tuple[List[T], List[T], T], Tuple[T, T, T]]:
-        x, restore_type = ep.astensor_(inputs)
-        del inputs
-
-        criterion = get_criterion(criterion)
-
-        was_iterable = True
-        if not isinstance(epsilons, Iterable):
-            epsilons = [epsilons]
-            was_iterable = False
-
-        N = len(x)
-        K = len(epsilons)
-
-        for i in range(self.times):
-            # run the attack
-            xps, xpcs, success = self.attack(
-                model, x, criterion, epsilons=epsilons, **kwargs
-            )
-            assert len(xps) == K
-            assert len(xpcs) == K
-            for xp in xps:
-                assert xp.shape == x.shape
-            for xpc in xpcs:
-                assert xpc.shape == x.shape
-            assert success.shape == (K, N)
-
-            if i == 0:
-                best_xps = xps
-                best_xpcs = xpcs
-                best_success = success
-                continue
-
-            # TODO: test if stacking the list to a single tensor and
-            # getting rid of the loop is faster
-
-            for k, epsilon in enumerate(epsilons):
-                first = best_success[k].logical_not()
-                assert first.shape == (N,)
-                if epsilon is None:
-                    # if epsilon is None, we need the minimum
-
-                    # TODO: maybe cache some of these distances
-                    # and then remove the else part
-                    closer = self.distance(x, xps[k]) < self.distance(x, best_xps[k])
-                    assert closer.shape == (N,)
-                    new_best = ep.logical_and(success[k], ep.logical_or(closer, first))
-                else:
-                    # for concrete epsilon, we just need a successful one
-                    new_best = ep.logical_and(success[k], first)
-                new_best = atleast_kd(new_best, x.ndim)
-                best_xps[k] = ep.where(new_best, xps[k], best_xps[k])
-                best_xpcs[k] = ep.where(new_best, xpcs[k], best_xpcs[k])
-
-            best_success = ep.logical_or(success, best_success)
-
-        best_xps_ = [restore_type(xp) for xp in best_xps]
-        best_xpcs_ = [restore_type(xpc) for xpc in best_xpcs]
-        if was_iterable:
-            return best_xps_, best_xpcs_, restore_type(best_success)
-        else:
-            assert len(best_xps_) == 1
-            assert len(best_xpcs_) == 1
-            return (
-                best_xps_[0],
-                best_xpcs_[0],
-                restore_type(best_success.squeeze(axis=0)),
-            )
-
-    def repeat(self, times: int) -> "Repeated":
-        return Repeated(self.attack, self.times * times)
+# class Repeated(AttackWithDistance):
+#     """Repeats the wrapped attack and returns the best result"""
+#
+#     def __init__(self, attack: AttackWithDistance, times: int):
+#         if times < 1:
+#             raise ValueError(f"expected times >= 1, got {times}")  # pragma: no cover
+#
+#         self.attack = attack
+#         self.times = times
+#
+#     @property
+#     def distance(self) -> Distance:
+#         return self.attack.distance
+#
+#     @overload
+#     def __call__(
+#         self,
+#         model: Model,
+#         inputs: T,
+#         criterion: Any,
+#         *,
+#         epsilons: Sequence[Union[float, None]],
+#         **kwargs: Any,
+#     ) -> Tuple[List[T], List[T], T]:
+#         ...
+#
+#     @overload  # noqa: F811
+#     def __call__(
+#         self,
+#         model: Model,
+#         inputs: T,
+#         criterion: Any,
+#         *,
+#         epsilons: Union[float, None],
+#         **kwargs: Any,
+#     ) -> Tuple[T, T, T]:
+#         ...
+#
+#     def __call__(  # noqa: F811
+#         self,
+#         model: Model,
+#         inputs: T,
+#         criterion: Any,
+#         *,
+#         epsilons: Union[Sequence[Union[float, None]], float, None],
+#         **kwargs: Any,
+#     ) -> Union[Tuple[List[T], List[T], T], Tuple[T, T, T]]:
+#         x = inputs
+#         del inputs
+#
+#         criterion = get_criterion(criterion)
+#
+#         was_iterable = True
+#         if not isinstance(epsilons, Iterable):
+#             epsilons = [epsilons]
+#             was_iterable = False
+#
+#         N = len(x)
+#         K = len(epsilons)
+#
+#         for i in range(self.times):
+#             # run the attack
+#             xps, xpcs, success = self.attack(
+#                 model, x, criterion, epsilons=epsilons, **kwargs
+#             )
+#             assert len(xps) == K
+#             assert len(xpcs) == K
+#             for xp in xps:
+#                 assert xp.shape == x.shape
+#             for xpc in xpcs:
+#                 assert xpc.shape == x.shape
+#             assert success.shape == (K, N)
+#
+#             if i == 0:
+#                 best_xps = xps
+#                 best_xpcs = xpcs
+#                 best_success = success
+#                 continue
+#
+#             # TODO: test if stacking the list to a single tensor and
+#             # getting rid of the loop is faster
+#
+#             for k, epsilon in enumerate(epsilons):
+#                 first = best_success[k].logical_not()
+#                 assert first.shape == (N,)
+#                 if epsilon is None:
+#                     # if epsilon is None, we need the minimum
+#
+#                     # TODO: maybe cache some of these distances
+#                     # and then remove the else part
+#                     closer = self.distance(x, xps[k]) < self.distance(x, best_xps[k])
+#                     assert closer.shape == (N,)
+#                     new_best = ep.logical_and(success[k], ep.logical_or(closer, first))
+#                 else:
+#                     # for concrete epsilon, we just need a successful one
+#                     new_best = ep.logical_and(success[k], first)
+#                 new_best = atleast_kd(new_best, x.ndim)
+#                 best_xps[k] = ep.where(new_best, xps[k], best_xps[k])
+#                 best_xpcs[k] = ep.where(new_best, xpcs[k], best_xpcs[k])
+#
+#             best_success = ep.logical_or(success, best_success)
+#
+#         best_xps_ = [restore_type(xp) for xp in best_xps]
+#         best_xpcs_ = [restore_type(xpc) for xpc in best_xpcs]
+#         if was_iterable:
+#             return best_xps_, best_xpcs_, restore_type(best_success)
+#         else:
+#             assert len(best_xps_) == 1
+#             assert len(best_xpcs_) == 1
+#             return (
+#                 best_xps_[0],
+#                 best_xpcs_[0],
+#                 restore_type(best_success.squeeze(axis=0)),
+#             )
+#
+#     def repeat(self, times: int) -> "Repeated":
+#         return Repeated(self.attack, self.times * times)
 
 
 class FixedEpsilonAttack(AttackWithDistance):
@@ -248,7 +249,7 @@ class FixedEpsilonAttack(AttackWithDistance):
         **kwargs: Any,
     ) -> Union[Tuple[List[T], List[T], T], Tuple[T, T, T]]:
 
-        x, restore_type = ep.astensor_(inputs)
+        x = inputs
         del inputs
 
         criterion = get_criterion(criterion)
@@ -316,18 +317,22 @@ class FixedEpsilonAttack(AttackWithDistance):
         # success = ep.logical_and(in_limits, is_adv)
         # assert success.shape == (K, N)
 
-        success_ = ep.stack(success)
+        success_ = np.stack(success)
+
         assert success_.shape == (K, N)
 
-        xps_ = [restore_type(xp) for xp in xps]
-        xpcs_ = [restore_type(xpc) for xpc in xpcs]
+        xps_ = xps
+        xpcs_ = xpcs
 
         if was_iterable:
-            return xps_, xpcs_, restore_type(success_)
+            return xps_, xpcs_, success_
         else:
             assert len(xps_) == 1
             assert len(xpcs_) == 1
-            return xps_[0], xpcs_[0], restore_type(success_.squeeze(axis=0))
+
+            return xps_[0], xpcs_[0], np.squeeze(success_)
+
+
 
 
 class MinimizationAttack(AttackWithDistance):
@@ -384,7 +389,8 @@ class MinimizationAttack(AttackWithDistance):
         epsilons: Union[Sequence[Union[float, None]], float, None],
         **kwargs: Any,
     ) -> Union[Tuple[List[T], List[T], T], Tuple[T, T, T]]:
-        x, restore_type = ep.astensor_(inputs)
+        x = inputs
+        # x, restore_type = ep.astensor_(inputs)
         del inputs
 
         criterion = get_criterion(criterion)
@@ -419,17 +425,18 @@ class MinimizationAttack(AttackWithDistance):
             xpcs.append(xpc)
             success.append(is_adv)
 
-        success_ = ep.stack(success)
+        success_ = np.stack(success)
         assert success_.shape == (K, N)
+        
 
-        xp_ = restore_type(xp)
-        xpcs_ = [restore_type(xpc) for xpc in xpcs]
+        xp_ = xp
+        xpcs_ = xpcs
 
         if was_iterable:
-            return [xp_] * K, xpcs_, restore_type(success_)
+            return [xp_] * K, xpcs_, success_
         else:
             assert len(xpcs_) == 1
-            return xp_, xpcs_[0], restore_type(success_.squeeze(axis=0))
+            return xp_, xpcs_[0], np.squeeze(success_)
 
 
 class FlexibleDistanceMinimizationAttack(MinimizationAttack):
@@ -450,8 +457,8 @@ class FlexibleDistanceMinimizationAttack(MinimizationAttack):
 
 def get_is_adversarial(
     criterion: Criterion, model: Model
-) -> Callable[[ep.Tensor], ep.Tensor]:
-    def is_adversarial(perturbed: ep.Tensor) -> ep.Tensor:
+) -> Callable[[T], T]:
+    def is_adversarial(perturbed: T) -> T:
         outputs = model(perturbed)
         return criterion(perturbed, outputs)
 

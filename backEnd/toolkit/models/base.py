@@ -1,10 +1,11 @@
 from typing import TypeVar, Callable, Optional, Tuple, Any
 from abc import ABC, abstractmethod
 import copy
+
 import eagerpy as ep
 
-from toolkit.types import Bounds, BoundsInput, Preprocessing
-from toolkit.devutils import atleast_kd
+from ..types import Bounds, BoundsInput, Preprocessing
+from ..devutils import atleast_kd
 
 
 T = TypeVar("T")
@@ -20,6 +21,10 @@ class Model(ABC):
     @abstractmethod  # noqa: F811
     def __call__(self, inputs: T) -> T:
         """Passes inputs through the model and returns the model's output"""
+        ...
+    @abstractmethod
+    def type_convert(self, inputs: T, revert: bool) -> T:
+        """Converts inputs to the model's framework"""
         ...
 
     def transform_bounds(self, bounds: BoundsInput) -> "Model":
@@ -38,10 +43,10 @@ class TransformBoundsWrapper(Model):
         return self._bounds
 
     def __call__(self, inputs: T) -> T:
-        x, restore_type = ep.astensor_(inputs)
+        x = inputs
         y = self._preprocess(x)
         z = self._model(y)
-        return restore_type(z)
+        return z
 
     def transform_bounds(self, bounds: BoundsInput, inplace: bool = False) -> Model:
         if inplace:
@@ -49,10 +54,10 @@ class TransformBoundsWrapper(Model):
             return self
         else:
             # using the wrapped model instead of self to avoid
-            # unnessary sequences of wrappers
+            # unnecessary sequences of wrappers
             return TransformBoundsWrapper(self._model, bounds)
 
-    def _preprocess(self, inputs: ep.TensorType) -> ep.TensorType:
+    def _preprocess(self, inputs: T) -> T:
         if self.bounds == self._model.bounds:
             return inputs
 
@@ -64,10 +69,6 @@ class TransformBoundsWrapper(Model):
         min_, max_ = self._model.bounds
         return x * (max_ - min_) + min_
 
-    @property
-    def data_format(self) -> Any:
-        return self._model.data_format  # type: ignore
-
 
 ModelType = TypeVar("ModelType", bound="ModelWithPreprocessing")
 
@@ -75,7 +76,7 @@ ModelType = TypeVar("ModelType", bound="ModelWithPreprocessing")
 class ModelWithPreprocessing(Model):
     def __init__(  # type: ignore
         self,
-        model: Callable[..., ep.types.NativeTensor],
+        model: Callable[..., T],
         bounds: BoundsInput,
         dummy: ep.Tensor,
         preprocessing: Preprocessing = None,

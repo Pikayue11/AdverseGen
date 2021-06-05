@@ -58,14 +58,13 @@ class HopSkipJump(MinimizationAttack):
     def __init__(
         self,
         init_attack: Optional[MinimizationAttack] = None,
-        steps: int = 64,
+        steps: int = 10,
         initial_gradient_eval_steps: int = 100,
         max_gradient_eval_steps: int = 10000,
         stepsize_search: Union[
             Literal["geometric_progression"], Literal["grid_search"]
         ] = "geometric_progression",
         gamma: float = 1.0,
-        tensorboard: Union[Literal[False], None, str] = False,
         constraint: Union[Literal["linf"], Literal["l2"]] = "l2",
     ):
         if init_attack is not None and not isinstance(init_attack, MinimizationAttack):
@@ -76,7 +75,6 @@ class HopSkipJump(MinimizationAttack):
         self.max_num_evals = max_gradient_eval_steps
         self.stepsize_search = stepsize_search
         self.gamma = gamma
-        self.tensorboard = tensorboard
         self.constraint = constraint
 
         assert constraint in ("l2", "linf")

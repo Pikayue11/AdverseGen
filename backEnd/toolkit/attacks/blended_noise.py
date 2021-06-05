@@ -2,9 +2,9 @@ from typing import Union, Optional, Any
 import numpy as np
 import eagerpy as ep
 
-from toolkit.devutils import atleast_kd
+from ..devutils import atleast_kd
 
-from toolkit.distances import Distance
+from ..distances import Distance
 
 from .base import FlexibleDistanceMinimizationAttack
 from .base import Model

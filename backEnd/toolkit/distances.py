@@ -2,9 +2,7 @@ from abc import ABC, abstractmethod
 from typing import TypeVar
 import eagerpy as ep
 
-from toolkit.devutils import flatten
-from toolkit.devutils import atleast_kd
-
+from .devutils import flatten, atleast_kd
 
 T = TypeVar("T")
 
