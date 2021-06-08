@@ -45,7 +45,6 @@ class PyTorchModel(ModelWithPreprocessing):
         dummy = ep.torch.zeros(0, device=device)
         self.data_format = "channels_first"
         self.device = device
-        self.type = "Numpy"
         self.convert = {"Pytorch": self.torch2torch, "TensorFlow": self.tensor2torch, "Numpy": self.numpy2torch}
 
         # we need to make sure the output only requires_grad if the input does
@@ -61,12 +60,6 @@ class PyTorchModel(ModelWithPreprocessing):
         super().__init__(
             _model, bounds=bounds, dummy=dummy, preprocessing=preprocessing
         )
-
-    def set_type(self, type: str):
-        self.type = type
-
-
-
 
     def type_convert(self, inputs: T, revert=False) -> T:
         ...

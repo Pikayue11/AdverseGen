@@ -1,12 +1,26 @@
 from PIL import Image
 import numpy as np
 import L0_attack.L0_API as l0
-
+from backEnd.attacker import ImageAttacker
 
 import os
 import time
 
-runningFlag = 0
+class ImageInfo():
+    def __init__(self,database):
+        self.database = database
+        self.width, self.height = self.update_resolution(database)
+        self.labels = self.update_labels(database)
+
+    def update_resolution(self,database):
+        if database == 'CIFAR-10':
+            return 32, 32
+        return -1, -1
+
+    def update_labels(self, database):
+        if database == 'CIFAR-10':
+            return ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+        return ['wky0','wky1','wky2']
 
 # to change the user upload image from jpg/jpeg into pngs format
 # becase simpleGUI can only display .png or .gif images
@@ -45,19 +59,19 @@ def AE_L0(images):     # work for single image
     im.save(image_path)
     return image_path, new_labels[0], L0_norms[0], success[0]
 
-def getLabel(images):
-    images = l0.data_preprocess(images)
-    return l0.get_labels(images,model = l0.load_model_L0())[0]
-
-
-def getAdvPath(ori_images, imageInfo, window1):
-    adv_newPath, adv_label_id, norm, success = AE_L0(ori_images)
+def getAdvPath(attacker: ImageAttacker, ori_image, label, imageInfo: ImageInfo, window1, target_label=None):
+    input = ori_image / 255
+    adv_image, adv_label_id, norm, success = attacker.run(input, label, target_label, window1['-ev-'].get())
+    img = (adv_image * 255).astype(np.uint8)
     adv_label_name = imageInfo.labels[int(adv_label_id)]
+    im = Image.fromarray(img[0])
+    image_path = 'AdvResults/new_test1.png'
+    im.save(image_path)
     print("The label of the adversarial image is", adv_label_name)
     print("The norm value is: ", norm)
 
     window1['-t6-'].update('Status: free            ')
-    window1['-adv_image-'].update(size=(imageInfo.width, imageInfo.height), filename=adv_newPath)
+    window1['-adv_image-'].update(size=(imageInfo.width, imageInfo.height), filename=image_path)
 
 def updateRunning(window1):
     status = ['States: running   ', 'States: running.  ', 'States: running.. ', 'States: running...']
@@ -67,21 +81,3 @@ def updateRunning(window1):
         cnt = cnt + 1
         cnt = cnt % 4
         time.sleep(1)
-
-
-
-class ImageInfo():
-    def __init__(self,database):
-        self.database = database
-        self.width, self.height = self.update_resolution(database)
-        self.labels = self.update_labels(database)
-
-    def update_resolution(self,database):
-        if database == 'CIFAR-10':
-            return 32, 32
-        return -1, -1
-
-    def update_labels(self,database):
-        if database == 'CIFAR-10':
-            return ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
-        return ['wky0','wky1','wky2']

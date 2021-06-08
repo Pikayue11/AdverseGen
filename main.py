@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import util_gui as gui
 import threading
 import Thread_control as tc
+from backEnd.attacker import ImageAttacker
 
 # N = 1
 # imageArr = np.zeros((N,32,32,3))
@@ -28,8 +29,8 @@ t6 = sg.Text('States: free          ', key='-t6-')
 
 #   Combo
 database = sg.Combo(['CIFAR-10', 'ImageNet'],default_value='CIFAR-10',key='-db-')
-network = sg.Combo(['Resnet18','AlexNet','VGG16'],default_value='Resnet18',key='-nw-')
-evaluation = sg.Combo(['L0','L2','L∞','SSIM'],default_value='L0',key='-ev-')
+network = sg.Combo(['ResNet18','AlexNet','VGG16'],default_value='ResNet18',key='-nw-')
+evaluation = sg.Combo(['L0','L2','L∞','SSIM', 'Decision-based'],default_value='L0',key='-ev-')
 attackMode = sg.Combo(['NonTarget','Target'],default_value='NonTarget',key='-am-')
 
 #   image select
@@ -72,9 +73,11 @@ layout1 = [[sg.Column(left_column),
 # window1 = sg.Window('Window 1', layout1, size=(800,600))
 window1 = sg.Window('Our tool box', layout1)
 win2_active = False
-
+imageAttacker = ImageAttacker(window1['-db-'].get())
+label = 0
 while True:
     event1, values1 = window1.read(timeout=100)
+
 
     if event1 in (None, '-quit-'):  # click quit
         for i in threads:
@@ -95,7 +98,7 @@ while True:
 
     if not win2_active and event1 == '-ci-':  # click check image
         path = window1['-ImagePath-'].get()
-        if (path == ''):
+        if path == '':
             print('path is empty')
         else:
             II = gui.ImageInfo(window1['-db-'].get())
@@ -104,7 +107,8 @@ while True:
                 print('Warning! Please enter a correct image path!')
             else:
                 ori_images = gui.getImage(ori_newPath)
-                ori_label_id = gui.getLabel(ori_images)
+                ori_label_id = imageAttacker.get_label(window1['-nw-'].get(), ori_images / 255)
+                label = ori_label_id
                 ori_label_name = II.labels[int(ori_label_id)]
                 print("The label of the original image is", ori_label_name)
                 window1['-ori_image-'].update(size=(II.width, II.height), filename=ori_newPath)
@@ -113,7 +117,7 @@ while True:
 
         if window1['-t6-'].get()[8:12] == 'free':
             window1['-t6-'].update('States: running   ')
-            t1 = threading.Thread(target=gui.getAdvPath, args=(ori_images, II, window1,))
+            t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, ori_images, label, II, window1,))
             threads.append(t1)
             t1.start()
             t2 = threading.Thread(target=gui.updateRunning, args=(window1,))

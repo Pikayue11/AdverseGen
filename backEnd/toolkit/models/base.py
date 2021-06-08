@@ -27,6 +27,10 @@ class Model(ABC):
         """Converts inputs to the model's framework"""
         ...
 
+    def set_type(self, type: str):
+        if type in ['Numpy', 'EagerPy', 'Pytorch', 'Tensorflow']:
+            self.type = type
+
     def transform_bounds(self, bounds: BoundsInput) -> "Model":
         """Returns a new model with the desired bounds and updates the preprocessing accordingly"""
         # subclasses can provide more efficient implementations
