@@ -81,6 +81,15 @@ def getAdvPath(attacker: ImageAttacker, ori_image, label, imageInfo: ImageInfo, 
     window1['-t6-'].update('Status: free            ')
     im_zoom = convert_to_bytes(im, (200, 200))
     window1['-adv_image-'].update(data=im_zoom)
+    pert = np.squeeze(adv_image - ori_image)
+    pert -= np.min(pert)
+    pert /= np.max(pert)
+    pert_img = Image.fromarray((pert * 255).astype(np.uint8))
+    pert_img_zoom = convert_to_bytes(pert_img, (200, 200))
+    window1['-pert_image-'].update(data=im_zoom)
+    window1['-adv_image-'].update(data=pert_img_zoom)
+
+
 
 
 def updateRunning(window1):

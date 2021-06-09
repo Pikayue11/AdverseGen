@@ -3,6 +3,7 @@ import util_gui as gui
 import threading
 import Thread_control as tc
 from backEnd.attacker import ImageAttacker
+import numpy as np
 
 # N = 1
 # imageArr = np.zeros((N,32,32,3))
@@ -35,7 +36,7 @@ evaluation = sg.Combo(['L0', 'L2', 'L∞', 'SSIM', 'Decision-based'], default_va
 attackMode = sg.Combo(['NonTarget', 'Target'], default_value='NonTarget', key='-am-')
 
 #   image select
-i1 = sg.Input(key='-ImagePath-')
+i1 = sg.Input(key='-ImagePath-', change_submits=True)
 f1 = sg.FileBrowse('choose picture')
 
 #   image
@@ -83,6 +84,7 @@ win2_active = False
 imageAttacker = ImageAttacker(window1['-db-'].get())
 label = 0
 flag = True
+ori_images = np.array([])
 
 while True:
     event1, values1 = window1.read(timeout=100)
@@ -94,6 +96,13 @@ while True:
         else:
             s1.unhide_row()
         flag = not flag
+
+    if event1 == '-ImagePath-':
+        ori_new_path = window1['-ImagePath-'].get()
+        ori_image = gui.getImage(ori_new_path)
+        ori_image_zoom = gui.convert_to_bytes(ori_new_path, (200, 200))
+        p1.update(data=ori_image_zoom)
+
 
     if event1 in (None, '-quit-'):  # click quit
         for i in threads:
@@ -130,7 +139,7 @@ while True:
                 ori_image_zoom = gui.convert_to_bytes(ori_newPath, (200, 200))
                 window1['-ori_image-'].update(data=ori_image_zoom)
 
-    if not win2_active and event1 == '-ca-':  # click comfirm all
+    if not win2_active and event1 == '-ca-':  # click confirm all
 
         if window1['-t6-'].get()[8:12] == 'free':
             window1['-t6-'].update('States: running   ')
