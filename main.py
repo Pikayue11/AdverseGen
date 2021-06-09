@@ -32,7 +32,7 @@ t6 = sg.Text('States: free          ', key='-t6-')
 database = sg.Combo(['CIFAR-10', 'ImageNet'], default_value='CIFAR-10', change_submits=True,
                     key='-db-')  # change_submits=True 可以监听combo
 network = sg.Combo(['ResNet18', 'AlexNet', 'VGG16'], default_value='ResNet18', key='-nw-')
-evaluation = sg.Combo(['L0', 'L2', 'L∞', 'SSIM', 'Decision-based'], default_value='L0', key='-ev-')
+evaluation = sg.Combo(['L0', 'L2', 'L∞', 'SSIM', 'Decision-based'], default_value='SSIM', key='-ev-')
 attackMode = sg.Combo(['NonTarget', 'Target'], default_value='NonTarget', key='-am-')
 
 #   image select
@@ -43,11 +43,14 @@ f1 = sg.FileBrowse('choose picture')
 p1 = sg.Image(size=(100, 200), key='-ori_image-')
 p2 = sg.Image(size=(100, 200), key='-pert_image-')
 p3 = sg.Image(size=(100, 200), key='-adv_image-')
+ori_label = sg.Text('', size=(25, 1), key='-ori_label', justification='center')
+pert_value = sg.Text('', size=(25, 1), key='-pert_value-',  justification='center')
+adv_label = sg.Text('', size=(25, 1), key='-adv_label-',  justification='center')
 
 #   input
 queryLimit = sg.InputText(size=(10, 5), key='ql')
 #   output
-s1 = sg.Output(size=(100, 6), key='-output-')
+s1 = sg.Output(size=(100, 10), key='-output-')
 
 #   ProgressBar
 pb = sg.ProgressBar(1000, orientation='h', size=(45, 10), key='progressbar')
@@ -66,20 +69,20 @@ left_column = [
     # [t6]
 ]
 
-right_column = [[p1, p2, p3]]
+right_column = [[p1, p2, p3], [ori_label, pert_value, adv_label]]
 
 layout1 = [[sg.Column(left_column)],
            [sg.HSeparator()],
            [sg.Column(right_column)],
            [sg.HSeparator()],
            [Console],
-           # [s1],
+           [s1],
            [sg.HSeparator()],
            [t6]
            ]
 
 # window1 = sg.Window('Window 1', layout1, size=(800,600))
-window1 = sg.Window('Our tool box', layout1, size=(700, 600))
+window1 = sg.Window('Our tool box', layout1, size=(700, 650))
 win2_active = False
 imageAttacker = ImageAttacker(window1['-db-'].get())
 label = 0
@@ -138,6 +141,7 @@ while True:
                 print("The label of the original image is", ori_label_name)
                 ori_image_zoom = gui.convert_to_bytes(ori_newPath, (200, 200))
                 window1['-ori_image-'].update(data=ori_image_zoom)
+                window1['-ori_label'].update(f'label: {ori_label_name}')
 
     if not win2_active and event1 == '-ca-':  # click confirm all
 

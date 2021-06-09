@@ -2,6 +2,7 @@ from PIL import Image
 import numpy as np
 import L0_attack.L0_API as l0
 from backEnd.attacker import ImageAttacker
+import PySimpleGUI as sg
 
 import os
 import time
@@ -75,19 +76,23 @@ def getAdvPath(attacker: ImageAttacker, ori_image, label, imageInfo: ImageInfo, 
     im = Image.fromarray(img[0])
     # image_path = 'AdvResults/new_test1.png'
     # im.save(image_path)
-    print("The label of the adversarial image is", adv_label_name)
-    print("The norm value is: ", norm)
 
     window1['-t6-'].update('Status: free            ')
     im_zoom = convert_to_bytes(im, (200, 200))
     window1['-adv_image-'].update(data=im_zoom)
-    pert = np.squeeze(adv_image - ori_image)
+    pert = np.squeeze(adv_image - input)
+    pert_value = np.mean(np.abs(pert))
     pert -= np.min(pert)
     pert /= np.max(pert)
     pert_img = Image.fromarray((pert * 255).astype(np.uint8))
     pert_img_zoom = convert_to_bytes(pert_img, (200, 200))
-    window1['-pert_image-'].update(data=im_zoom)
-    window1['-adv_image-'].update(data=pert_img_zoom)
+    window1['-pert_image-'].update(data=pert_img_zoom)
+    window1['-adv_image-'].update(data=im_zoom)
+    window1['-pert_value-'].update('modified pixels avg: %.4f' % pert_value)
+    window1['-adv_label-'].update(f'label: {imageInfo.labels[int(adv_label_id[0])]}')
+
+
+
 
 
 
@@ -95,10 +100,12 @@ def getAdvPath(attacker: ImageAttacker, ori_image, label, imageInfo: ImageInfo, 
 def updateRunning(window1):
     status = ['States: running   ', 'States: running.  ', 'States: running.. ', 'States: running...']
     cnt = 1
+    pert_image_zoom, adv_image_zoom = None, None
     while window1['-t6-'].get()[0:18] in status:
         # update mid process
-        pert_image_zoom = convert_to_bytes(r'./tmp/pert.png', (200, 200))
-        adv_image_zoom = convert_to_bytes(r'./tmp/adv.png', (200, 200))
+        if os.path.exists(r'./tmp/diff_wkyTest.png'):
+            pert_image_zoom = convert_to_bytes(r'./tmp/diff_wkyTest.png', (200, 200))
+            adv_image_zoom = convert_to_bytes(r'./tmp/adv_wkyTest.png', (200, 200))
         window1['-pert_image-'].update(data=pert_image_zoom)
         window1['-adv_image-'].update(data=adv_image_zoom)
         window1['-t6-'].update(status[cnt])

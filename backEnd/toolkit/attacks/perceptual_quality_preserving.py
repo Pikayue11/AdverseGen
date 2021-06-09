@@ -12,6 +12,7 @@ from ..distances import l1, l2, linf
 
 from .SSIM_attack_back import PQP
 
+from ..LogManagement import MyLog
 
 class PQPAttack(MinimizationAttack):
     distance = l1
@@ -59,8 +60,13 @@ class PQPAttack(MinimizationAttack):
         for i in range(num_imgs):
             img = (inputs[i] * 255).astype(np.uint8)
             label = labels[i]
+
+            # init log
+            ori_img = np.expand_dims(np.copy(img), axis=0)
+            myLog = MyLog(ori_img, label.raw, model, target=target_classes[i].raw, isTarget=True)
+
             # start attack
-            newImg, success_, ssim_, psnr_, NQ_, _ = PQP(labels[i].raw, query_fun=query_fun, or_img=img,
+            newImg, success_, ssim_, psnr_, NQ_, _ = PQP(myLog, labels[i].raw, query_fun=query_fun, or_img=img,
                                                          target=target_classes[i].raw)
             newImg = np.uint8(newImg)
             adv_images[i] = newImg / 255
@@ -71,7 +77,5 @@ class PQPAttack(MinimizationAttack):
             ssim.append(ssim_)
             psnr.append(psnr_)
             NQ.append(NQ_)
-        print('\n***Ending**')
-        print('*** Success %d/%d, average ssim: %0.3f'
-              % (sum(success), num_imgs, mean(ssim)))
+
         return adv_images

@@ -15,7 +15,6 @@ model_dict = {"ResNet18": ResNet18Init}
 
 
 def modelImporter(mname: str):
-    print(mname)
     if mname in model_dict.keys():
         init_func = model_dict[mname]
         return init_func(), mname

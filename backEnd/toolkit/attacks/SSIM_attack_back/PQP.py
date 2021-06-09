@@ -43,7 +43,7 @@ def PQP_inner(get_loss_and_gain, img, loss, low_ssim_grad_pixels, N=20, delta=1,
 
     return img, loss, k
 
-def PQP(or_label, query_fun, or_img, target, loss_goal=None, minimize_loss=False, ssim_th=0.95, M=66., N=20, delta=1, k_max=20, print_every=100):
+def PQP(myLog, or_label, query_fun, or_img, target, loss_goal=None, minimize_loss=False, ssim_th=0.95, M=66., N=20, delta=1, k_max=20, print_every=10):
     """
     Perform Perceptual Quality Preserving (PQP) black-box attack
     :param query_fun: a function which takes as input:
@@ -119,7 +119,6 @@ def PQP(or_label, query_fun, or_img, target, loss_goal=None, minimize_loss=False
     NQ = 0
     iter = 0
     cons = get_for(att_img)
-    print('[log][Start       ] origin: %0.3f target: %0.3f ssim ssim: %0.3f' % (cons[or_label], cons[target], ssim))
 
     while gain < 0 and ssim >= ssim_th:
         # compute the SSIM gradient and get the first M smallest pixel locations
@@ -134,21 +133,19 @@ def PQP(or_label, query_fun, or_img, target, loss_goal=None, minimize_loss=False
         iter += 1
         cons = get_for(att_img)
         if cons.argmax() == target:
-            print('[log][iter %7d] origin: %0.3f target: %0.3f ssim ssim: %0.3f' % (iter, cons[or_label], cons[target], ssim))
             break
         if iter % print_every == 0:
+            advImg = np.copy(att_img)
+            myLog.imgUpdate(np.expand_dims(advImg, axis=0), iter)
             ssim = compute_ssim(or_img, att_img)
             psnr = compute_psnr(or_img, att_img)
-            print('[log][iter %7d] origin: %0.3f target: %0.3f ssim ssim: %0.3f'  % (iter, cons[or_label], cons[target], ssim))
 
+    advImg = np.copy(att_img)
+    myLog.logEnd(np.expand_dims(advImg, axis=0))
     cons = get_for(att_img)
     success = (cons.argmax() == target)
     ssim = compute_ssim(or_img, att_img)
     psnr = compute_psnr(or_img, att_img)
-    if success:
-        print('[log][End: success] original label %d, new label %d, ssim=%0.3f\n' % (or_label, cons.argmax(), ssim))
-    else:
-        print('[log][End: failed ] original label %d, new label %d, ssim=%0.3f\n' % (or_label, cons.argmax(), ssim))
     tf_sess.close()
     return att_img, success, ssim, psnr, NQ, loss
 
