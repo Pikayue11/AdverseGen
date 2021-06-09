@@ -35,7 +35,7 @@ class ImageAttacker:
         self.fmodel[0].set_type('Numpy')
         with torch.no_grad():
             y_test = self.fmodel[0](input)
-        labels = np.zeros(input.shape[0])
+        labels = np.zeros(input.shape[0], dtype=np.int64)
         for i in range(input.shape[0]):
             labels[i] = y_test[i].argmax()
         return labels

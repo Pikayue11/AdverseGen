@@ -5,14 +5,17 @@ from backEnd.attacker import ImageAttacker
 
 import os
 import time
+import io
+import base64
+
 
 class ImageInfo():
-    def __init__(self,database):
+    def __init__(self, database):
         self.database = database
         self.width, self.height = self.update_resolution(database)
         self.labels = self.update_labels(database)
 
-    def update_resolution(self,database):
+    def update_resolution(self, database):
         if database == 'CIFAR-10':
             return 32, 32
         return -1, -1
@@ -20,7 +23,8 @@ class ImageInfo():
     def update_labels(self, database):
         if database == 'CIFAR-10':
             return ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
-        return ['wky0','wky1','wky2']
+        return ['wky0', 'wky1', 'wky2']
+
 
 # to change the user upload image from jpg/jpeg into pngs format
 # becase simpleGUI can only display .png or .gif images
@@ -39,25 +43,29 @@ def savePng(path, width, height):
         return ''
     file_name += 'png'
     im = Image.open(path)
-    im = im.resize((width,height))
+    im = im.resize((width, height))
     newPath = folder_name + file_name
     im.save(newPath)
     return newPath
 
-def UpDimension(threeDImage):   # work for single image
+
+def UpDimension(threeDImage):  # work for single image
     return np.expand_dims(threeDImage, axis=0)
+
 
 def getImage(path):
     ori_image = Image.open(path)
     ori_image = np.array(ori_image)
     return UpDimension(ori_image)
 
-def AE_L0(images):     # work for single image
+
+def AE_L0(images):  # work for single image
     _, new_images, new_labels, L0_norms, success = l0.L0_api(images)
     im = Image.fromarray(new_images[0])
     image_path = 'AdvResults/new_test1.png'
     im.save(image_path)
     return image_path, new_labels[0], L0_norms[0], success[0]
+
 
 def getAdvPath(attacker: ImageAttacker, ori_image, label, imageInfo: ImageInfo, window1, target_label=None):
     input = ori_image / 255
@@ -65,19 +73,60 @@ def getAdvPath(attacker: ImageAttacker, ori_image, label, imageInfo: ImageInfo, 
     img = (adv_image * 255).astype(np.uint8)
     adv_label_name = imageInfo.labels[int(adv_label_id)]
     im = Image.fromarray(img[0])
-    image_path = 'AdvResults/new_test1.png'
-    im.save(image_path)
+    # image_path = 'AdvResults/new_test1.png'
+    # im.save(image_path)
     print("The label of the adversarial image is", adv_label_name)
     print("The norm value is: ", norm)
 
     window1['-t6-'].update('Status: free            ')
-    window1['-adv_image-'].update(size=(imageInfo.width, imageInfo.height), filename=image_path)
+    im_zoom = convert_to_bytes(im, (200, 200))
+    window1['-adv_image-'].update(data=im_zoom)
+
 
 def updateRunning(window1):
     status = ['States: running   ', 'States: running.  ', 'States: running.. ', 'States: running...']
     cnt = 1
     while window1['-t6-'].get()[0:18] in status:
+        # update mid process
+        pert_image_zoom = convert_to_bytes(r'./tmp/pert.png', (200, 200))
+        adv_image_zoom = convert_to_bytes(r'./tmp/adv.png', (200, 200))
+        window1['-pert_image-'].update(data=pert_image_zoom)
+        window1['-adv_image-'].update(data=adv_image_zoom)
         window1['-t6-'].update(status[cnt])
         cnt = cnt + 1
         cnt = cnt % 4
         time.sleep(1)
+
+
+def convert_to_bytes(file_or_bytes, resize=None):
+    '''
+    Will convert into bytes and optionally resize an image that is a file or a base64 bytes object.
+    Turns into  PNG format in the process so that can be displayed by tkinter
+    :param file_or_bytes: either a string filename or a bytes base64 image object
+    :type file_or_bytes:  (Union[str, bytes])
+    :param resize:  optional new size
+    :type resize: (Tuple[int, int] or None)
+    :return: (bytes) a byte-string object
+    :rtype: (bytes)
+    '''
+    if isinstance(file_or_bytes, Image.Image):
+        img = file_or_bytes
+    else:
+        if isinstance(file_or_bytes, str):
+            img = Image.open(file_or_bytes)
+        else:
+            try:
+                img = Image.open(io.BytesIO(base64.b64decode(file_or_bytes)))
+            except Exception as e:
+                dataBytesIO = io.BytesIO(file_or_bytes)
+                img = Image.open(dataBytesIO)
+
+    cur_width, cur_height = img.size
+    if resize:
+        new_width, new_height = resize
+        scale = min(new_height / cur_height, new_width / cur_width)
+        img = img.resize((int(cur_width * scale), int(cur_height * scale)), Image.ANTIALIAS)
+    with io.BytesIO() as bio:
+        img.save(bio, format="PNG")
+        del img
+        return bio.getvalue()

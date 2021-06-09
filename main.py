@@ -16,68 +16,84 @@ Comfirm_all = sg.Button('Comfirm all', key='-ca-')
 Stop = sg.Button('Stop', key='-stop-')
 Quit = sg.Button('Quit', key='-quit-')
 Clear = sg.Button('Clear', key='-clear-')
+Console = sg.Button('Console', key='-console-')
 
 #   text
 # title = sg.Text('Our tool box',key='-title-',justification='center')
-t1 = sg.Text('Please select network and database',key='-t1-')
-t2 = sg.Text('Please choose a jpg/jpeg/png picture in your computer',key='-t2-')
+t1 = sg.Text('Please select network and database', key='-t1-')
+t2 = sg.Text('Please choose a jpg/jpeg/png picture in your computer', key='-t2-')
 # t3 = sg.Text('Max queries',key='-t3-')
 # t4 = sg.Text('recommend: 100000-200000',key='-t4-')
-t5 = sg.Text('progress bar',key='-t5-')
+t5 = sg.Text('progress bar', key='-t5-')
 t6 = sg.Text('States: free          ', key='-t6-')
 
-
 #   Combo
-database = sg.Combo(['CIFAR-10', 'ImageNet'],default_value='CIFAR-10',key='-db-')
-network = sg.Combo(['ResNet18','AlexNet','VGG16'],default_value='ResNet18',key='-nw-')
-evaluation = sg.Combo(['L0','L2','L∞','SSIM', 'Decision-based'],default_value='L0',key='-ev-')
-attackMode = sg.Combo(['NonTarget','Target'],default_value='NonTarget',key='-am-')
+database = sg.Combo(['CIFAR-10', 'ImageNet'], default_value='CIFAR-10', change_submits=True,
+                    key='-db-')  # change_submits=True 可以监听combo
+network = sg.Combo(['ResNet18', 'AlexNet', 'VGG16'], default_value='ResNet18', key='-nw-')
+evaluation = sg.Combo(['L0', 'L2', 'L∞', 'SSIM', 'Decision-based'], default_value='L0', key='-ev-')
+attackMode = sg.Combo(['NonTarget', 'Target'], default_value='NonTarget', key='-am-')
 
 #   image select
 i1 = sg.Input(key='-ImagePath-')
 f1 = sg.FileBrowse('choose picture')
 
 #   image
-p1 = sg.Image(key='-ori_image-')
-p2 = sg.Image(key='-adv_image-')
+p1 = sg.Image(size=(100, 200), key='-ori_image-')
+p2 = sg.Image(size=(100, 200), key='-pert_image-')
+p3 = sg.Image(size=(100, 200), key='-adv_image-')
 
 #   input
-queryLimit = sg.InputText(size=(10,5),key='ql')
+queryLimit = sg.InputText(size=(10, 5), key='ql')
 #   output
-s1 = sg.Output(size=(60, 5),key='-output-')
+s1 = sg.Output(size=(100, 6), key='-output-')
 
 #   ProgressBar
 pb = sg.ProgressBar(1000, orientation='h', size=(45, 10), key='progressbar')
 
 left_column = [
-               # [title],
-               [t1],
-               [database,network,evaluation,attackMode],
-               [t2],
-               [i1,f1],
-               # [t3,queryLimit],
-               [Check_image,Comfirm_all, Stop, Clear, Quit],
-               # [s1],
-               # [t5],
-               # [pb],
-               [t6]
+    # [title],
+    [t1],
+    [database, network, evaluation, attackMode],
+    [t2],
+    [i1, f1],
+    # [t3,queryLimit],
+    [Check_image, Comfirm_all, Stop, Clear, Quit],
+    # [s1],
+    # [t5],
+    # [pb],
+    # [t6]
 ]
 
-right_column = [[p1],
-                [p2]]
+right_column = [[p1, p2, p3]]
 
-layout1 = [[sg.Column(left_column),
-            sg.VSeperator(),
-            sg.Column(right_column)]]
+layout1 = [[sg.Column(left_column)],
+           [sg.HSeparator()],
+           [sg.Column(right_column)],
+           [sg.HSeparator()],
+           [Console],
+           # [s1],
+           [sg.HSeparator()],
+           [t6]
+           ]
 
 # window1 = sg.Window('Window 1', layout1, size=(800,600))
-window1 = sg.Window('Our tool box', layout1)
+window1 = sg.Window('Our tool box', layout1, size=(700, 600))
 win2_active = False
 imageAttacker = ImageAttacker(window1['-db-'].get())
 label = 0
+flag = True
+
 while True:
     event1, values1 = window1.read(timeout=100)
 
+
+    if event1 == '-console-':
+        if flag:
+            s1.hide_row()
+        else:
+            s1.unhide_row()
+        flag = not flag
 
     if event1 in (None, '-quit-'):  # click quit
         for i in threads:
@@ -111,7 +127,8 @@ while True:
                 label = ori_label_id
                 ori_label_name = II.labels[int(ori_label_id)]
                 print("The label of the original image is", ori_label_name)
-                window1['-ori_image-'].update(size=(II.width, II.height), filename=ori_newPath)
+                ori_image_zoom = gui.convert_to_bytes(ori_newPath, (200, 200))
+                window1['-ori_image-'].update(data=ori_image_zoom)
 
     if not win2_active and event1 == '-ca-':  # click comfirm all
 
@@ -123,10 +140,7 @@ while True:
             t2 = threading.Thread(target=gui.updateRunning, args=(window1,))
             threads.append(t2)
             t2.start()
-
         else:
             print('There is something running, please wait')
 
 window1.close()
-
-

@@ -4,7 +4,7 @@ from typing_extensions import Literal
 import torch
 from torchvision import transforms
 import numpy as np
-from .base import FixedEpsilonAttack, get_is_adversarial, T, get_criterion
+from .base import FixedEpsilonAttack, get_is_adversarial, T, get_criterion, MinimizationAttack
 from .. import Distance
 from ..models import Model
 from ..criteria import Criterion, TargetedMisclassification
@@ -13,7 +13,7 @@ from ..distances import l1, l2, linf
 from .SSIM_attack_back import PQP
 
 
-class PQPAttack(FixedEpsilonAttack):
+class PQPAttack(MinimizationAttack):
     distance = l1
 
     def __init__(
@@ -41,11 +41,14 @@ class PQPAttack(FixedEpsilonAttack):
                 img = np.expand_dims(img / 255, axis=0)
                 output = torch.nn.Softmax(dim=1)(torch.from_numpy(model(img))).squeeze().numpy()
             return output
+
         criterion = get_criterion(criterion)
         if not isinstance(criterion, TargetedMisclassification):
-            raise TypeError(
-                f"criterion should be TargetedMisclassification."
-            )
+            output = model(inputs=inputs)
+            target_class = np.squeeze(np.argsort(output))[-2]
+            print(target_class)
+            criterion = TargetedMisclassification(labels=criterion.labels, target_classes=np.array([target_class]))
+
         is_adversarial = get_is_adversarial(criterion, model)
         mean = lambda x: np.asarray(x).mean()
         success, ssim, psnr, NQ = [], [], [], []
@@ -56,7 +59,6 @@ class PQPAttack(FixedEpsilonAttack):
         for i in range(num_imgs):
             img = (inputs[i] * 255).astype(np.uint8)
             label = labels[i]
-
             # start attack
             newImg, success_, ssim_, psnr_, NQ_, _ = PQP(labels[i].raw, query_fun=query_fun, or_img=img,
                                                          target=target_classes[i].raw)
