@@ -137,7 +137,7 @@ while True:
                 ori_images = gui.getImage(ori_newPath)
                 ori_label_id = imageAttacker.get_label(window1['-nw-'].get(), ori_images / 255)
                 label = ori_label_id
-                ori_label_name = II.labels[int(ori_label_id)]
+                ori_label_name = II.mapLabel(ori_label_id)
                 print("The label of the original image is", ori_label_name)
                 ori_image_zoom = gui.convert_to_bytes(ori_newPath, (200, 200))
                 window1['-ori_image-'].update(data=ori_image_zoom)

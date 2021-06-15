@@ -21,10 +21,22 @@ class ImageInfo():
             return 32, 32
         return -1, -1
 
+    def mapLabel(self, index):
+        prefix = self.database.lower()
+        fileName = './database/' + prefix + '_label'
+        f = open(fileName, 'r')
+        str = f.readlines()[int(index)]
+        f.close()
+        return str.split(',')[0].strip()
+
     def update_labels(self, database):
         if database == 'CIFAR-10':
             return ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
         return ['wky0', 'wky1', 'wky2']
+
+
+
+
 
 
 # to change the user upload image from jpg/jpeg into pngs format
@@ -72,7 +84,7 @@ def getAdvPath(attacker: ImageAttacker, ori_image, label, imageInfo: ImageInfo, 
     input = ori_image / 255
     adv_image, adv_label_id, norm, success = attacker.run(input, label, target_label, window1['-ev-'].get())
     img = (adv_image * 255).astype(np.uint8)
-    adv_label_name = imageInfo.labels[int(adv_label_id)]
+    adv_label_name = imageInfo.mapLabel(adv_label_id)
     im = Image.fromarray(img[0])
     # image_path = 'AdvResults/new_test1.png'
     # im.save(image_path)
@@ -89,12 +101,7 @@ def getAdvPath(attacker: ImageAttacker, ori_image, label, imageInfo: ImageInfo, 
     window1['-pert_image-'].update(data=pert_img_zoom)
     window1['-adv_image-'].update(data=im_zoom)
     window1['-pert_value-'].update('modified pixels avg: %.4f' % pert_value)
-    window1['-adv_label-'].update(f'label: {imageInfo.labels[int(adv_label_id[0])]}')
-
-
-
-
-
+    window1['-adv_label-'].update(f'label: {imageInfo.mapLabel(adv_label_id[0])}')
 
 
 def updateRunning(window1):
