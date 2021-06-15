@@ -222,12 +222,11 @@ class HopSkipJump(MinimizationAttack):
 
                 x_advs = proposals[minimal_idx]
             if not logger is None:
-                logger.imgUpdate((x_advs.raw*255).astype(np.uint8), iter=step)
+                logger.imgUpdate(x_advs.raw, iter=step)
 
             distances = self.distance(originals, x_advs)
         if not logger is None:
-            logger.logEnd((x_advs.raw*255).astype(np.uint8))
-
+            logger.logEnd(x_advs.raw)
         return restore_type(x_advs)
 
     def approximate_gradients(

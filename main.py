@@ -84,7 +84,7 @@ layout1 = [[sg.Column(left_column)],
 # window1 = sg.Window('Window 1', layout1, size=(800,600))
 window1 = sg.Window('Our tool box', layout1, size=(700, 650))
 win2_active = False
-imageAttacker = ImageAttacker(window1['-db-'].get())
+imageAttacker = ImageAttacker('CIFAR-10')
 label = 0
 flag = True
 ori_images = np.array([])

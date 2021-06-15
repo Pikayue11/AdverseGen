@@ -2,7 +2,7 @@
 # import scipy.io
 import numpy as np
 # import torch
-from utils_pt import get_logits, get_predictions
+from .utils_pt import get_logits, get_predictions
 
 
 

@@ -58,7 +58,7 @@ class ImageAttacker:
     def run(self, input: T, label: T, target_label: T, evaluation: str, verbose: bool=True) -> Tuple[T, T, int, T]:
         self.set_algo(evaluation)
         if verbose:
-            logger = LogManagement((input * 255).astype(np.uint8), label, self.fmodel, evaluation, target_label, self.database)
+            logger = LogManagement(input, label[0], self.fmodel, evaluation, target=target_label, databaseName=self.database)
         else:
             logger = None
 
