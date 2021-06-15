@@ -81,6 +81,8 @@ transform = transforms.Compose([
 ])
 device = ('cuda' if torch.cuda.is_available() else 'cpu')
 def getCons(model, img):
+    if np.max(img) > 1:
+        img = img / 255
     output = model(np.expand_dims(img, axis=0))
     output = torch.nn.Softmax(dim=1)(torch.from_numpy(output)).squeeze().numpy()
 
