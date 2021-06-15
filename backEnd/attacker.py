@@ -6,6 +6,7 @@ import torch
 from .toolkit.model_importer import modelImporter
 import numpy as np
 from .toolkit.criteria import TargetedMisclassification
+from .toolkit.log_management import LogManagement
 
 T = TypeVar("T")
 
@@ -54,16 +55,21 @@ class ImageAttacker:
         if self.fmodel[0] is None or self.fmodel[1] != mname:
             self.fmodel[0], self.fmodel[1] = modelImporter(mname)
 
-    def run(self, input: T, label: T, target_label: T, eval: str) -> Tuple[T, T, int, T]:
-        self.set_algo(eval)
+    def run(self, input: T, label: T, target_label: T, evaluation: str, verbose: bool=True) -> Tuple[T, T, int, T]:
+        self.set_algo(evaluation)
+        if verbose:
+            logger = LogManagement((input * 255).astype(np.uint8), label, self.fmodel, evaluation, target_label, self.database)
+        else:
+            logger = None
+
         if target_label is None:
-            _, advs, success = self.algo(self.fmodel[0], input, label, epsilons=None)
+            _, advs, success = self.algo(self.fmodel[0], input, label, epsilons=None, logger=logger)
         else:
             if not isinstance(label, list):
                 label = [label]
             if not isinstance(target_label, list):
                 target_label = [target_label]
             criterion = TargetedMisclassification(labels=label, target_classes=target_label)
-            _, advs, success = self.algo(self.fmodel[0], input, criterion, epsilons=None)
+            _, advs, success = self.algo(self.fmodel[0], input, criterion, epsilons=None, logger=logger)
         adv_id = self.get_label(self.fmodel[1], advs)
         return advs, adv_id, 0, success

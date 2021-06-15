@@ -17,6 +17,8 @@ from ..distances import l1
 
 from ..devutils import atleast_kd, flatten
 
+from ..log_management import LogManagement
+
 from .base import MinimizationAttack, get_is_adversarial
 from .base import get_criterion
 from .base import T
@@ -91,6 +93,7 @@ class HopSkipJump(MinimizationAttack):
         *,
         early_stop: Optional[float] = None,
         starting_points: Optional[T] = None,
+        logger:LogManagement = None,
         **kwargs: Any,
     ) -> T:
         raise_if_kwargs(kwargs)
@@ -138,7 +141,6 @@ class HopSkipJump(MinimizationAttack):
         distances = self.distance(originals, x_advs)
 
         for step in range(self.steps):
-            print(step)
             delta = self.select_delta(originals, distances, step)
 
             # Choose number of gradient estimation steps.
@@ -219,9 +221,12 @@ class HopSkipJump(MinimizationAttack):
                 minimal_idx = ep.argmin(proposals_distances, 0)
 
                 x_advs = proposals[minimal_idx]
+            if not logger is None:
+                logger.imgUpdate((x_advs.raw*255).astype(np.uint8), iter=step)
 
             distances = self.distance(originals, x_advs)
-
+        if not logger is None:
+            logger.logEnd((x_advs.raw*255).astype(np.uint8))
 
         return restore_type(x_advs)
 

@@ -43,7 +43,7 @@ def PQP_inner(get_loss_and_gain, img, loss, low_ssim_grad_pixels, N=20, delta=1,
 
     return img, loss, k
 
-def PQP(myLog, or_label, query_fun, or_img, target, loss_goal=None, minimize_loss=False, ssim_th=0.95, M=66., N=20, delta=1, k_max=20, print_every=10):
+def PQP(or_label, query_fun, or_img, target, loss_goal=None, minimize_loss=False, ssim_th=0.95, M=66., N=20, delta=1, k_max=20, print_every=10, logger=None):
     """
     Perform Perceptual Quality Preserving (PQP) black-box attack
     :param query_fun: a function which takes as input:
@@ -136,12 +136,14 @@ def PQP(myLog, or_label, query_fun, or_img, target, loss_goal=None, minimize_los
             break
         if iter % print_every == 0:
             advImg = np.copy(att_img)
-            myLog.imgUpdate(np.expand_dims(advImg, axis=0), iter)
+            if not logger is None:
+                logger.imgUpdate(np.expand_dims(advImg, axis=0), iter)
             ssim = compute_ssim(or_img, att_img)
             psnr = compute_psnr(or_img, att_img)
 
     advImg = np.copy(att_img)
-    myLog.logEnd(np.expand_dims(advImg, axis=0))
+    if not logger is None:
+        logger.logEnd(np.expand_dims(advImg, axis=0))
     cons = get_for(att_img)
     success = (cons.argmax() == target)
     ssim = compute_ssim(or_img, att_img)

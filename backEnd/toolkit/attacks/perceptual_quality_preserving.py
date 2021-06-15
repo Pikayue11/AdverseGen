@@ -12,7 +12,7 @@ from ..distances import l1, l2, linf
 
 from .SSIM_attack_back import PQP
 
-from ..LogManagement import MyLog
+from ..log_management import LogManagement
 
 class PQPAttack(MinimizationAttack):
     distance = l1
@@ -34,6 +34,7 @@ class PQPAttack(MinimizationAttack):
             model: Model,
             inputs: T,
             criterion: Union[Criterion, T],
+            logger: LogManagement=None,
             **kwargs: Any
             ) -> T:
         def query_fun(img):  # img is [32,32,3], the elements are from [0 to 255]
@@ -47,7 +48,6 @@ class PQPAttack(MinimizationAttack):
         if not isinstance(criterion, TargetedMisclassification):
             output = model(inputs=inputs)
             target_class = np.squeeze(np.argsort(output))[-2]
-            print(target_class)
             criterion = TargetedMisclassification(labels=criterion.labels, target_classes=np.array([target_class]))
 
         is_adversarial = get_is_adversarial(criterion, model)
@@ -63,11 +63,11 @@ class PQPAttack(MinimizationAttack):
 
             # init log
             ori_img = np.expand_dims(np.copy(img), axis=0)
-            myLog = MyLog(ori_img, label.raw, model, target=target_classes[i].raw, isTarget=True)
+            myLog = logger
 
             # start attack
-            newImg, success_, ssim_, psnr_, NQ_, _ = PQP(myLog, labels[i].raw, query_fun=query_fun, or_img=img,
-                                                         target=target_classes[i].raw)
+            newImg, success_, ssim_, psnr_, NQ_, _ = PQP(labels[i].raw, query_fun=query_fun, or_img=img,
+                                                         target=target_classes[i].raw, logger=myLog)
             newImg = np.uint8(newImg)
             adv_images[i] = newImg / 255
             if (success_):

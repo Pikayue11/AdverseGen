@@ -50,7 +50,7 @@ adv_label = sg.Text('', size=(25, 1), key='-adv_label-',  justification='center'
 #   input
 queryLimit = sg.InputText(size=(10, 5), key='ql')
 #   output
-s1 = sg.Output(size=(100, 10), key='-output-')
+s1 = sg.Output(size=(100, 10), key='-output-', echo_stdout_stderr=True)
 
 #   ProgressBar
 pb = sg.ProgressBar(1000, orientation='h', size=(45, 10), key='progressbar')

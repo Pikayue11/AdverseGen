@@ -7,6 +7,7 @@ from torch import nn
 import torch.nn.functional as F
 from torch.autograd.gradcheck import zero_gradients
 from torchvision import transforms as T
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -16,9 +17,6 @@ from Normalize import Normalize
 from loader import ImageNet
 from torch.utils.data import DataLoader
 import argparse
-
-from typing import Callable, TypeVar, Any, Union, Optional, Sequence, List, Tuple, Dict
-from typing_extensions import final, overload
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--input_csv', type=str, default='dataset/dev_dataset.csv', help='Input directory with images.')
@@ -36,8 +34,6 @@ parser.add_argument("--amplification", type=float, default=10.0, help="To amplif
 parser.add_argument("--prob", type=float, default=0.7, help="probability of using diverse inputs.")
 
 opt = parser.parse_args()
-
-E = TypeVar("E")
 
 # hyperparamter list
 image_width = 299
@@ -68,8 +64,7 @@ def project_noise(x, stack_kern, kern_size):
 
 stack_kern, kern_size = project_kern(3)
 
-def clip_by_tensor(
-        t: E, t_min: float, t_max: float):
+def clip_by_tensor(t, t_min, t_max):
     """
     clip_by_tensor
     :param t: tensor
