@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from resnet import ResNet18
-from cornersearch_attacks_pt import CSattack
+from .cornersearch_attacks_pt import CSattack
 
 device = ('cuda' if torch.cuda.is_available() else 'cpu')
 # classes = ('plane', 'car', 'bird', 'cat','deer', 'dog', 'frog', 'horse', 'ship', 'truck')
