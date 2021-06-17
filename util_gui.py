@@ -14,11 +14,13 @@ class ImageInfo():
     def __init__(self, database):
         self.database = database
         self.width, self.height = self.update_resolution(database)
-        self.labels = self.update_labels(database)
+
 
     def update_resolution(self, database):
-        if database == 'CIFAR-10':
+        if database.lower() == 'cifar-10':
             return 32, 32
+        if database.lower() == 'imagenet':
+            return 299, 299
         return -1, -1
 
     def mapLabel(self, index):
@@ -29,17 +31,19 @@ class ImageInfo():
         f.close()
         return str.split(',')[0].strip()
 
-    def update_labels(self, database):
-        if database == 'CIFAR-10':
-            return ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
-        return ['wky0', 'wky1', 'wky2']
+    def getLabelArray(self):
+        prefix = self.database.lower()
+        fileName = './database/' + prefix + '_label'
+        f = open(fileName, 'r')
+        str = f.readlines()
+        str = [i.strip() for i in str]
+        f.close()
+        return str
 
 
 
 
-
-
-# to change the user upload image from jpg/jpeg into pngs format
+    # to change the user upload image from jpg/jpeg into pngs format
 # becase simpleGUI can only display .png or .gif images
 def savePng(path, width, height):
     if os.path.exists(path) == False:
