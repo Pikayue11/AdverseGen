@@ -42,6 +42,8 @@ def get_device(device):
         return torch.device(device)
     return device
 
+device = get_device(None)
+
 
 if torch.cuda.is_available():
     torch.backends.cudnn.benchmark = True
@@ -56,7 +58,7 @@ def project_kern(kern_size):
     kern = kern.astype(np.float32)
     stack_kern = np.stack([kern, kern, kern])
     stack_kern = np.expand_dims(stack_kern, 1)
-    stack_kern = torch.tensor(stack_kern).cuda()
+    stack_kern = torch.tensor(stack_kern).to(device)
     return stack_kern, kern_size // 2
 
 def project_noise(x, stack_kern, kern_size):
