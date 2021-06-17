@@ -15,6 +15,8 @@ class ImageInfo():
         self.database = database
         self.width, self.height = self.update_resolution(database)
 
+    def set_database(self, database):
+        self.database = database
 
     def update_resolution(self, database):
         if database.lower() == 'cifar-10':
