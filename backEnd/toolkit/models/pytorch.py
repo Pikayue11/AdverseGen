@@ -46,6 +46,7 @@ class PyTorchModel(ModelWithPreprocessing):
         self.data_format = "channels_first"
         self.device = device
         self.convert = {"Pytorch": self.torch2torch, "TensorFlow": self.tensor2torch, "Numpy": self.numpy2torch}
+        self.type = 'Numpy'
 
         # we need to make sure the output only requires_grad if the input does
         def _model(x: T) -> T:

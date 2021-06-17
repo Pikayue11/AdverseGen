@@ -13,7 +13,7 @@ T = TypeVar("T")
 algo_dict = {"HopSkipJump": tk.attacks.HopSkipJump, "CornerSearch": tk.attacks.CornerSearch,
              "PQPAttack": tk.attacks.PQPAttack}
 
-model_avail = {"CIFAR-10": ['Resnet18'], "ImageNet": []}
+model_avail = {"CIFAR-10": ['Resnet18'], "ImageNet": ['ResNet152']}
 
 class ImageAttacker:
     def __init__(

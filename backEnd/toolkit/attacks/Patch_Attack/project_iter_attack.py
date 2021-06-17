@@ -7,15 +7,8 @@ from torch import nn
 import torch.nn.functional as F
 from torch.autograd.gradcheck import zero_gradients
 from torchvision import transforms as T
-from tqdm import tqdm
 import numpy as np
-import pandas as pd
-from tqdm import tqdm
-from PIL import Image
-from torchvision.datasets import ImageFolder
-from Normalize import Normalize
-from loader import ImageNet
-from torch.utils.data import DataLoader
+from .Normalize import Normalize
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -39,6 +32,15 @@ opt = parser.parse_args()
 image_width = 299
 image_resize = 330
 prob = 0.7
+
+def get_device(device):
+    import torch
+
+    if device is None:
+        return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    if isinstance(device, str):
+        return torch.device(device)
+    return device
 
 
 if torch.cuda.is_available():
@@ -88,14 +90,14 @@ def graph(x, gt, x_min, x_max, max_epsilon):
     alpha = eps / num_iter
     alpha_beta = alpha * amplification_factor
     gamma = alpha_beta
+    amplification = 0.0
+    device = get_device(None)
 
-    if torch.cuda.is_available():
-        model = torch.nn.Sequential(Normalize(mean, std), models.inception_v3(pretrained=True).eval().cuda())
-    else:
-        model = torch.nn.Sequential(Normalize(mean, std),models.inception_v3(pretrained=True).eval())
+    model = torch.nn.Sequential(Normalize(mean, std), models.inception_v3(pretrained=True).eval().to(device))
+    x = x.to(device)
 
     x.requires_grad = True
-    amplification = 0.0
+
     for i in range(num_iter):
         zero_gradients(x)
         output_v3 = model(x)
@@ -136,50 +138,4 @@ def input_diversity(input_tensor):
     return padded if torch.rand(()) < opt.prob else input_tensor
 
 
-def main():
-    if torch.cuda.is_available():
-        res152 = torch.nn.Sequential(Normalize(opt.mean, opt.std),models.resnet152(pretrained=True).eval().cuda())
-        inc_v3 = torch.nn.Sequential(Normalize(opt.mean, opt.std), models.inception_v3(pretrained=True).eval().cuda())
-        resnext50_32x4d = torch.nn.Sequential(Normalize(opt.mean, opt.std),models.resnext50_32x4d(pretrained=True).eval().cuda())
-        dense161 = torch.nn.Sequential(Normalize(opt.mean, opt.std),models.densenet169(pretrained=True).eval().cuda())
-    else:
-        res152 = torch.nn.Sequential(Normalize(opt.mean, opt.std), models.resnet152(pretrained=True).eval())
-        inc_v3 = torch.nn.Sequential(Normalize(opt.mean, opt.std), models.inception_v3(pretrained=True).eval())
-        resnext50_32x4d = torch.nn.Sequential(Normalize(opt.mean, opt.std),models.resnext50_32x4d(pretrained=True).eval())
-        dense161 = torch.nn.Sequential(Normalize(opt.mean, opt.std), models.densenet169(pretrained=True).eval())
-
-    X = ImageNet(opt.input_dir, opt.input_csv, transforms)
-    data_loader = DataLoader(X, batch_size=opt.batch_size, shuffle=False, pin_memory=True, num_workers=8)
-    sum_res152, sum_v3, sum_rext, sum_den = 0,0,0,0
-
-    for images, _,  gt_cpu in tqdm(data_loader):
-        if torch.cuda.is_available():
-            gt = gt_cpu.cuda()
-            images = images.cuda()
-
-        images_min = clip_by_tensor(images - opt.max_epsilon / 255.0, 0.0, 1.0)
-        images_max = clip_by_tensor(images + opt.max_epsilon / 255.0, 0.0, 1.0)
-        adv_img = graph(images, gt, images_min, images_max)
-
-
-        with torch.no_grad():
-            if torch.cuda.is_available():
-                sum_res152 += (res152(adv_img).argmax(1) != gt).detach().sum().cpu()
-                sum_v3 += (inc_v3(adv_img).argmax(1) != gt).detach().sum().cpu()
-                sum_rext += (resnext50_32x4d(adv_img).argmax(1) != gt).detach().sum().cpu()
-                sum_den += (dense161(adv_img).argmax(1) != gt).detach().sum().cpu()
-            else:
-                sum_res152 += (res152(adv_img).argmax(1) != gt).detach().sum()
-                sum_v3 += (inc_v3(adv_img).argmax(1) != gt).detach().sum()
-                sum_rext += (resnext50_32x4d(adv_img).argmax(1) != gt).detach().sum()
-                sum_den += (dense161(adv_img).argmax(1) != gt).detach().sum()
-
-    print('inc_v3 = {:.2%}'.format(sum_v3 / 1000.0))
-    print('res152 = {:.2%}'.format(sum_res152 / 1000.0))
-    print('dense = {:.2%}'.format(sum_den / 1000.0))
-    print('rext = {:.2%}'.format(sum_rext / 1000.0))
-
-
-if __name__ == '__main__':
-    main()
 
