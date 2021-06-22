@@ -135,7 +135,7 @@ del_save = ['-c1_del-', '-c2_del-', '-c3_del-', '-c4_del-']
 aaa = 1
 while True:
     event1, values1 = win1.read(timeout=100)
-    
+
     if event1 == '-cp1-' and not win2_active:   # after choose a target image in cifar-10, remain work, see reference at bottom
         print(win1['-cp1-'].TKStringVar.get())
     if event1 == '-cp2-' and not win2_active:   # after choose a target image in imageNet, remain work

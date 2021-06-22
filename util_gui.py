@@ -2,13 +2,10 @@ from PIL import Image
 import numpy as np
 import L0_attack.L0_API as l0
 from backEnd.attacker import ImageAttacker
-import PySimpleGUI as sg
-
 import os
 import time
 import io
 import base64
-
 
 class ImageInfo():
     def __init__(self, database):
@@ -43,30 +40,31 @@ class ImageInfo():
         f.close()
         return str
 
-
-
-
-    # to change the user upload image from jpg/jpeg into pngs format
+# to change the user upload image from jpg/jpeg into pngs format
 # becase simpleGUI can only display .png or .gif images
 def savePng(path, width, height):
     if os.path.exists(path) == False:
         return ''
-    folder_name = 'pngs/'
-    file_name = os.path.basename(path)
-    if file_name[-3:].lower() == 'jpg':
-        file_name = file_name[:-3]
-    elif file_name[-4:].lower() == 'jpeg':
-        file_name = file_name[:-4]
-    elif file_name[-3:].lower() == 'png':
-        file_name = file_name[:-3]
-    else:
+
+    file = os.path.basename(path)
+    index = file.rfind('.')
+    if index == -1:
         return ''
-    file_name += 'png'
+    extension = file[index:]
+    if extension.lower() not in ('.jpg', '.png', '.jpeg'):
+        return ''
+    file_name = file[:index]
+
+    folder_name1 = 'images/pngs/'
+    folder_name2 = 'images/'
+    new_extension = '.png'
     im = Image.open(path)
     im = im.resize((width, height))
-    newPath = folder_name + file_name
-    im.save(newPath)
-    return newPath
+    newPath1 = folder_name1 + 'ori_' +file_name + extension
+    newPath2 = folder_name2 +  'oriPng_' + file_name + new_extension
+    im.save(newPath1)
+    im.save(newPath2)
+    return newPath1, newPath2
 
 
 def UpDimension(threeDImage):  # work for single image
@@ -117,16 +115,15 @@ def updateRunning(window1):
     pert_image_zoom, adv_image_zoom = None, None
     while window1['-t6-'].get()[0:18] in status:
         # update mid process
-        if os.path.exists(r'./tmp/diff_wkyTest.png'):
-            pert_image_zoom = convert_to_bytes(r'./tmp/diff_wkyTest.png', (200, 200))
-            adv_image_zoom = convert_to_bytes(r'./tmp/adv_wkyTest.png', (200, 200))
+        if os.path.exists(r'./images/tmp/diff_wkyTest.png'):
+            pert_image_zoom = convert_to_bytes(r'./images/tmp/diff_wkyTest.png', (200, 200))
+            adv_image_zoom = convert_to_bytes(r'./images/tmp/adv_wkyTest.png', (200, 200))
         window1['-pert_image-'].update(data=pert_image_zoom)
         window1['-adv_image-'].update(data=adv_image_zoom)
-        window1['-t6-'].update(status[cnt])
+        window1['-t3-'].update(status[cnt])
         cnt = cnt + 1
         cnt = cnt % 4
         time.sleep(1)
-
 
 def convert_to_bytes(file_or_bytes, resize=None):
     '''

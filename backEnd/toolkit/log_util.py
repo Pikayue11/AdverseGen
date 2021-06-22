@@ -2,7 +2,7 @@ import numpy as np
 from PIL import Image
 
 def saveImage(advImage, filename, extension, type): ## type: ori, adv, diff
-    folder_name = './tmp/'
+    folder_name = './images/tmp/'
     newName = folder_name + type + '_' + filename + '.' + extension
     im = denormalize_images(advImage, type)
     im = Image.fromarray(im)
