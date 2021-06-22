@@ -15,19 +15,18 @@ def denormalize_images(image, type):
             image *= 255
     return image.astype(np.uint8)
 
-def getFileNameAndExtension(path):
-    slashIndex = path.rindex('/')
-    if(slashIndex == -1 or slashIndex+1 == len(path)):
-        print('Please choose a right file path')
-        return None, None
-    extensionIndex = path.rindex('.')
-    if (extensionIndex == -1 or extensionIndex + 1 == len(path) or extensionIndex == slashIndex + 1):
-        print('Please choose a right file path with a correct extension')
-        return None, None
-    extention = path[extensionIndex + 1:]
-    fileName = path[slashIndex + 1:extensionIndex]
-    return fileName, extention
-
+# def getFileNameAndExtension(path):
+#     slashIndex = path.rindex('/')
+#     if(slashIndex == -1 or slashIndex+1 == len(path)):
+#         print('Please choose a right file path')
+#         return None, None
+#     extensionIndex = path.rindex('.')
+#     if (extensionIndex == -1 or extensionIndex + 1 == len(path) or extensionIndex == slashIndex + 1):
+#         print('Please choose a right file path with a correct extension')
+#         return None, None
+#     extention = path[extensionIndex + 1:]
+#     fileName = path[slashIndex + 1:extensionIndex]
+#     return fileName, extention
 
 def get_diff(img1, img2): #[32 ,32 ,3]
     img1 = np.array(img1)
@@ -40,11 +39,7 @@ def get_diff(img1, img2): #[32 ,32 ,3]
     diff_img = np.array(diff_img)
     return diff_img.astype(np.uint8)
 
-
-
 # three ugly function
-
-
 
 def mapLabel(database, index):
     cifar_10_labels = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']

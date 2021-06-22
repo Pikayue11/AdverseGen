@@ -42,29 +42,27 @@ class ImageInfo():
 
 # to change the user upload image from jpg/jpeg into pngs format
 # becase simpleGUI can only display .png or .gif images
-def savePng(path, width, height):
+def savePng(path, width, height, folder1 = 'images/pngs/', folder2 = 'images/tmp/', prefix1 = 'ori', prifix2 = 'oriPng'):
     if os.path.exists(path) == False:
-        return ''
-
+        return '', ''
     file = os.path.basename(path)
     index = file.rfind('.')
     if index == -1:
-        return ''
-    extension = file[index:]
-    if extension.lower() not in ('.jpg', '.png', '.jpeg'):
-        return ''
+        return '', ''
     file_name = file[:index]
-
-    folder_name1 = 'images/pngs/'
-    folder_name2 = 'images/'
+    extension = file[index:]
     new_extension = '.png'
+    if extension.lower() not in ('.jpg', '.png', '.jpeg'):
+        return '', ''
+    long_name1 = prefix1 + file_name + extension
+    long_name2 = prifix2 + file_name + new_extension
+    newPath1 = folder1 + long_name1
+    newPath2 = folder2 + long_name2
     im = Image.open(path)
     im = im.resize((width, height))
-    newPath1 = folder_name1 + 'ori_' +file_name + extension
-    newPath2 = folder_name2 +  'oriPng_' + file_name + new_extension
     im.save(newPath1)
     im.save(newPath2)
-    return newPath1, newPath2
+    return newPath1, newPath2, long_name1, long_name2
 
 
 def UpDimension(threeDImage):  # work for single image
