@@ -39,6 +39,7 @@ class ImageInfo():
         f = open(fileName, 'r')
         str = f.readlines()
         str = [i.strip() for i in str]
+        str = [i.split(',')[0] for i in str]
         f.close()
         return str
 
