@@ -135,6 +135,25 @@ del_save = ['-c1_del-', '-c2_del-', '-c3_del-', '-c4_del-']
 aaa = 1
 while True:
     event1, values1 = win1.read(timeout=100)
+    
+    if event1 == '-cp1-' and not win2_active:   # after choose a target image in cifar-10, remain work, see reference at bottom
+        print(win1['-cp1-'].TKStringVar.get())
+    if event1 == '-cp2-' and not win2_active:   # after choose a target image in imageNet, remain work
+        print(win1['-cp2-'].TKStringVar.get())
+    if event1 == '-cp-' and not win2_active:   # after choose a original image, remain work
+        print(win1['-cp-'].TKStringVar.get())
+
+    if event1 == '-ra-' and not win2_active:  # click run attack ,remain work
+        if win1['-t3-'].get()[8:12] == 'free':
+            win1['-t3-'].update('States: running   ')
+            t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, ori_images, label, II, win1,))
+            threads.append(t1)
+            t1.start()
+            t2 = threading.Thread(target=gui.updateRunning, args=(win1,))
+            threads.append(t2)
+            t2.start()
+        else:
+            print('There is something running, please wait')
 
     if event1 in ('-c1_del-', '-c2_del-', '-c3_del-', '-c4_del-') and not win2_active:  # after click one of 'Delete'
         index = del_save.index(event1)
@@ -147,13 +166,6 @@ while True:
             for i in range(index, cons_number-1):
                 win1[c_save[i]].update(win1[c_save[i+1]].get())
         cons_number -= 1
-
-    if event1 == '-cp1-' and not win2_active:   # after choose a target image in cifar-10, remain work, see reference at bottom
-        print(win1['-cp1-'].TKStringVar.get())
-    if event1 == '-cp2-' and not win2_active:   # after choose a target image in imageNet, remain work
-        print(win1['-cp2-'].TKStringVar.get())
-    if event1 == '-cp-' and not win2_active:   # after choose a original image, remain work
-        print(win1['-cp-'].TKStringVar.get())
 
     if event1 == '-group-' and not win2_active:    # select database in table group, set database in II and image Attacker , win1['-group-'].get() returns 'CIFAR-10' or 'ImageNet'
         II.set_database(win1['-group-'].get())
@@ -168,31 +180,19 @@ while True:
             win1[label_save[index]].update(visible=False)
             win1[cp_save[index]].update(disabled=True)
 
-    if event1 in (None, '-quit-') and not win2_active:  # click quit, stop all the thread and break
-        for i in threads:
-            tc._async_raise(i.ident, SystemExit)
-        break
-
     if event1 in (None, '-stop-') and not win2_active:  # click stop, stop all the thread and empty threads array
         for i in threads:
             tc._async_raise(i.ident, SystemExit)
         threads = []
-        win1['-t6-'].update('States: free          ')
+        win1['-t3-'].update('States: free          ')
         win1['-ori_image-'].update()
         win1['-adv_image-'].update()
         print('stopped')
 
-    if event1 == '-ra-' and not win2_active:  # click run attack ,remain work
-        if win1['-t6-'].get()[8:12] == 'free':
-            win1['-t6-'].update('States: running   ')
-            t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, ori_images, label, II, win1,))
-            threads.append(t1)
-            t1.start()
-            t2 = threading.Thread(target=gui.updateRunning, args=(win1,))
-            threads.append(t2)
-            t2.start()
-        else:
-            print('There is something running, please wait')
+    if event1 in (None, '-quit-') and not win2_active:  # click quit, stop all the thread and break
+        for i in threads:
+            tc._async_raise(i.ident, SystemExit)
+        break
 
     if event1 == '-add-' and not win2_active:    # click edit constraints, open window 2
         if cons_max > cons_number:
