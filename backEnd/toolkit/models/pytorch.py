@@ -51,9 +51,8 @@ class PyTorchModel(ModelWithPreprocessing):
         # we need to make sure the output only requires_grad if the input does
         def _model(x: T) -> T:
             x = self.convert[self.type](x)
-            x = x.permute(0, 3, 1, 2).float()
             with torch.set_grad_enabled(x.requires_grad):
-                result = cast(torch.Tensor, model(x.to(device)))
+                result = cast(torch.Tensor, model(x.to(device).float()))
             result = result.cpu()
             result = self.convert[self.type](result, revert=True)
             return result
@@ -73,7 +72,7 @@ class PyTorchModel(ModelWithPreprocessing):
         if revert:
             return input.numpy()
         else:
-            return torch.from_numpy(input)
+            return torch.from_numpy(input).permute(0, 3, 1, 2)
 
     def tensor2torch(self, input, revert=False) -> T:
         import torch

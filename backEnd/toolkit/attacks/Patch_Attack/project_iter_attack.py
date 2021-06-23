@@ -11,6 +11,8 @@ import numpy as np
 from .Normalize import Normalize
 import argparse
 
+from ...log_management import LogManagement
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--input_csv', type=str, default='dataset/dev_dataset.csv', help='Input directory with images.')
 parser.add_argument('--input_dir', type=str, default='dataset/images/', help='Input directory with images.')
@@ -33,6 +35,7 @@ image_width = 299
 image_resize = 330
 prob = 0.7
 
+
 def get_device(device):
     import torch
 
@@ -42,8 +45,8 @@ def get_device(device):
         return torch.device(device)
     return device
 
-device = get_device(None)
 
+device = get_device(None)
 
 if torch.cuda.is_available():
     torch.backends.cudnn.benchmark = True
@@ -52,21 +55,26 @@ else:
 
 transforms = T.Compose([T.CenterCrop(image_width), T.ToTensor()])
 
+
 def project_kern(kern_size):
     kern = np.ones((kern_size, kern_size), dtype=np.float32) / (kern_size ** 2 - 1)
     kern[kern_size // 2, kern_size // 2] = 0.0
     kern = kern.astype(np.float32)
     stack_kern = np.stack([kern, kern, kern])
     stack_kern = np.expand_dims(stack_kern, 1)
+
     stack_kern = torch.tensor(stack_kern).to(device)
     return stack_kern, kern_size // 2
 
+
 def project_noise(x, stack_kern, kern_size):
     # x = tf.pad(x, [[0,0],[kern_size,kern_size],[kern_size,kern_size],[0,0]], "CONSTANT")
-    x = F.conv2d(x, stack_kern, padding = (kern_size, kern_size), groups=3)
+    x = F.conv2d(x, stack_kern, padding=(kern_size, kern_size), groups=3)
     return x
 
+
 stack_kern, kern_size = project_kern(3)
+
 
 def clip_by_tensor(t, t_min, t_max):
     """
@@ -81,13 +89,13 @@ def clip_by_tensor(t, t_min, t_max):
     return result
 
 
-def graph(x, gt, x_min, x_max, max_epsilon):
+def graph(x, gt, x_min, x_max, max_epsilon, logger: LogManagement = None):
     eps = max_epsilon / 255.0
     # Hyperparameter list
     num_iter = 10
     amplification_factor = 10.0
-    mean = np.array([0.485, 0.456, 0.406]) # ImageNet dataset preprocess
-    std = np.array([0.229, 0.224, 0.225]) # ImageNet dataset preprocess
+    mean = np.array([0.485, 0.456, 0.406])  # ImageNet dataset preprocess
+    std = np.array([0.229, 0.224, 0.225])  # ImageNet dataset preprocess
     # start attack
     alpha = eps / num_iter
     alpha_beta = alpha * amplification_factor
@@ -120,14 +128,16 @@ def graph(x, gt, x_min, x_max, max_epsilon):
         # x = x + alpha * torch.sign(noise)
         x = x + alpha_beta * torch.sign(noise) + projection
         x = clip_by_tensor(x, x_min, x_max)
-        x = V(x, requires_grad = True)
-
+        x = V(x, requires_grad=True)
+        if logger is not None:
+            logger.imgUpdate(x.detach().cpu().permute(0, 2, 3, 1).numpy(), i)
+    logger.logEnd(x.detach().cpu().permute(0, 2, 3, 1).numpy())
     return x.detach()
 
 
 def input_diversity(input_tensor):
     rnd = torch.randint(opt.image_width, opt.image_resize, ())
-    rescaled = F.interpolate(input_tensor, size = [rnd, rnd], mode = 'bilinear', align_corners=True)
+    rescaled = F.interpolate(input_tensor, size=[rnd, rnd], mode='bilinear', align_corners=True)
     h_rem = opt.image_resize - rnd
     w_rem = opt.image_resize - rnd
     pad_top = torch.randint(0, h_rem, ())
@@ -138,6 +148,3 @@ def input_diversity(input_tensor):
     padded = nn.ConstantPad2d((pad_left, pad_right, pad_top, pad_bottom), 0.)(rescaled)
     padded = nn.functional.interpolate(padded, [opt.image_resize, opt.image_resize])
     return padded if torch.rand(()) < opt.prob else input_tensor
-
-
-

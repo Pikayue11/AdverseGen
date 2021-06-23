@@ -75,7 +75,7 @@ class LogManagement():
 
     def updateTarget(self, advImg, iter):
         cons = getCons(self.model, advImg[0])
-        normValue = getNormValue(self.img[0], advImg[0], self.norm)
+        normValue = getNormValue(self.img, advImg, self.norm)
         if (iter <= 0):
             logger.info('origin_con: %.4f, target_con: %.4f, %s: %.3f' % (
             cons[int(self.oriLabel)], cons[int(self.target)], self.norm, normValue))
@@ -89,7 +89,7 @@ class LogManagement():
 
     def updateNonTarget(self, advImg, iter):
         cons = getCons(self.model, advImg[0])
-        normValue = getNormValue(self.img[0], advImg[0], self.norm)
+        normValue = getNormValue(self.img, advImg, self.norm)
         if (iter <= 0):
             logger.info('origin_con: %.4f, %s: %.3f' % (cons[self.oriLabel], self.norm, normValue))
             print('origin_con: %.4f, %s: %.3f' % (cons[self.oriLabel], self.norm, normValue))
@@ -107,7 +107,7 @@ class LogManagement():
 
     def endTarget(self, advImg):
         cons = getCons(self.model, advImg[0])
-        normValue = getNormValue(self.img[0], advImg[0], self.norm)
+        normValue = getNormValue(self.img, advImg, self.norm)
         success = 'successed' if cons.argmax() == self.target else 'failed'
         logger.info('\n*** \n    End of the attack, it %s\n'
 
@@ -132,7 +132,7 @@ class LogManagement():
 
     def endNonTarget(self, advImg):
         cons = getCons(self.model, advImg[0])
-        normValue = getNormValue(self.img[0], advImg[0], self.norm)
+        normValue = getNormValue(self.img, advImg, self.norm)
         success = 'successed' if cons.argmax() != self.oriLabel else 'failed'
         logger.info('\n*** \n    End of the attack, it %s\n'
                     '    Origin_label: %s\n'

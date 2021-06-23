@@ -5,6 +5,8 @@ import numpy as np
 from .utils_pt import get_logits, get_predictions
 import eagerpy as ep
 
+from ...log_management import LogManagement
+
 
 def onepixel_perturbation(attack, orig_x, pos, sigma):
     ''' returns a batch with the possible perturbations of the pixel in position pos '''
@@ -147,7 +149,7 @@ def sigma_map(x):
     ''' creates the sigma-map for the batch x '''
     sh = [4]
     sh.extend(x.shape)
-    t =np.zeros(sh)
+    t = np.zeros(sh)
     t[0, :, :-1] = x[:, 1:]
     t[0, :, -1] = x[:, -1]
     t[1, :, 1:] = x[:, :-1]
@@ -181,6 +183,7 @@ class CSattack():
             'kappa']  # for L0+sigma (see kappa in the paper), larger kappa means easier and more visible attacks
         self.k = args['sparsity']  # maximum number of pixels that can be modified (k_max in the paper)
         self.size_incr = args['size_incr']  # size of progressive increment of sparsity levels to check
+        self.logger: LogManagement = args['logger']  # logger to print mid process
 
     def perturb(self, x_nat, y_nat):
         y_nat = y_nat.raw
@@ -195,6 +198,7 @@ class CSattack():
         # corr_pred = sess.run(self.model.correct_prediction, {self.model.x_input: x_nat, self.model.y_input: y_nat})
         corr_pred = get_predictions(self.model, x_nat, y_nat)
         bs = self.shape_img[0] * self.shape_img[1]
+        fitness = get_logits(self.model, x_nat)[0, y_nat]
 
         for c in range(x_nat.shape[0]):
             if corr_pred[c]:
@@ -210,6 +214,13 @@ class CSattack():
                     logit_2[counter * bs:(counter + 1) * bs] = get_logits(self.model,
                                                                           batch_x[counter * bs:(counter + 1) * bs])
                     pred = logit_2[counter * bs:(counter + 1) * bs].argmax(axis=-1) == np.tile(batch_y, (bs))
+                    new_fitness = np.min(logit_2[counter * bs: (counter + 1) * bs][:, y_nat])
+                    if (self.logger is not None) and new_fitness <= fitness:
+                        advimg_idx = np.argmin(logit_2[counter * bs: (counter + 1) * bs][:, y_nat])
+                        advimg = batch_x[counter * bs:(counter + 1) * bs][advimg_idx]
+                        self.logger.imgUpdate(np.expand_dims(advimg, axis=0), 0)
+                        fitness = new_fitness
+
                     if not pred.all() and not found:
                         ind_adv = np.where(pred.astype(int) == 0)
                         adv[c] = batch_x[counter * bs + ind_adv[0][0]]
@@ -217,6 +228,7 @@ class CSattack():
                         # print('Point {} - adversarial example found changing 1 pixel'.format(c))
 
                 # creates the orderings
+
                 t1 = np.copy(logit_2[:, batch_y])
                 logit_2[:, batch_y] = -1000.0 * np.ones(np.shape(logit_2[:, batch_y]))
                 t2 = np.amax(logit_2, axis=1)
@@ -231,11 +243,15 @@ class CSattack():
                         for c2 in range(self.n_classes):
                             if not found:
                                 ind_cl = np.copy(ind[:, c2])
-
                                 batch_x = npixels_perturbation(self, x_nat[c], ind_cl, n3, sigma)
-                                # pred = sess.run(self.model.correct_prediction, feed_dict={self.model.x_input: batch_x, self.model.y_input: np.tile(batch_y,(batch_x.shape[0]))})
+                                logit_2 = get_logits(self.model, batch_x)
+                                new_fitness = np.min(logit_2[:, y_nat])
+                                if (self.logger is not None) and new_fitness <= fitness:
+                                    advimg_idx = np.argmin(logit_2[:, y_nat])
+                                    advimg = batch_x[advimg_idx]
+                                    self.logger.imgUpdate(np.expand_dims(advimg, axis=0), 0)
+                                    fitness = new_fitness
                                 pred = get_predictions(self.model, batch_x, np.tile(batch_y, (batch_x.shape[0])))
-
                                 if np.sum(pred.astype(np.int32)) < self.n_iter and not found:
                                     found = True
                                     ind_adv = np.where(pred.astype(int) == 0)
@@ -259,5 +275,6 @@ class CSattack():
         # print('Maximum perturbation size: {:.5f}'.format(np.amax(np.abs(adv - x_nat))))
 
         # return adv, pixels_changed, fl_success
-
+        if self.logger is not None:
+            self.logger.logEnd(np.array(adv))
         return np.array(adv), pixels_changed

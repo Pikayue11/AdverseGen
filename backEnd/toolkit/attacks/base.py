@@ -422,10 +422,12 @@ class MinimizationAttack(AttackWithDistance):
                 xpc = self.distance.clip_perturbation(x, xp, epsilon)
             is_adv = is_adversarial(xpc)
 
+
             xpcs.append(xpc)
             success.append(is_adv)
 
         success_ = np.stack(success)
+
         assert success_.shape == (K, N)
         
 

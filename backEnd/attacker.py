@@ -7,11 +7,13 @@ from .toolkit.model_importer import modelImporter
 import numpy as np
 from .toolkit.criteria import TargetedMisclassification
 from .toolkit.log_management import LogManagement
+from .toolkit.distances import Distance, get_distance
 
 T = TypeVar("T")
 
 algo_dict = {"HopSkipJump": tk.attacks.HopSkipJump, "CornerSearch": tk.attacks.CornerSearch,
-             "PQPAttack": tk.attacks.PQPAttack}
+             "PQPAttack": tk.attacks.PQPAttack, "PatchAttack": tk.attacks.PatchAttack,
+             "LeBA": tk.attacks.LeBA}
 
 model_avail = {"CIFAR-10": ['Resnet18'], "ImageNet": ['ResNet152']}
 
@@ -44,6 +46,8 @@ class ImageAttacker:
     def set_algo(self, constraint: str):
         if constraint == 'L0':
             self.algo = algo_dict['CornerSearch']()
+        elif constraint == 'L2':
+            self.algo = algo_dict['PatchAttack']()
         elif constraint == 'SSIM':
             self.algo = algo_dict['PQPAttack']()
         elif constraint == 'Decision-based':
@@ -57,8 +61,9 @@ class ImageAttacker:
 
     def run(self, input: T, label: T, target_label: T, evaluation: str, verbose: bool=True) -> Tuple[T, T, int, T]:
         self.set_algo(evaluation)
+        distance = get_distance(evaluation)
         if verbose:
-            logger = LogManagement(input, label[0], self.fmodel, evaluation, target=target_label, databaseName=self.database)
+            logger = LogManagement(input, label[0], self.fmodel, distance, target=target_label, databaseName=self.database)
         else:
             logger = None
 

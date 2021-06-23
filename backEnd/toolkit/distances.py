@@ -66,6 +66,7 @@ class LpDistance(Distance):
         clipped_perturbation = factor * p
         return restore_type(x + clipped_perturbation)
 
+
 class SSIMDistance(Distance):
     def __init__(self):
         ...
@@ -82,11 +83,24 @@ class SSIMDistance(Distance):
         # only supports [n, m, c] image
         if not (isinstance(references, np.ndarray) and isinstance(perturbed, np.ndarray)):
             raise TypeError('only supports numpy array.')
+        x = np.copy(references[0])
+        y = np.copy(perturbed[0])
+        if x.dtype != np.uint8:
+            # change to 0-255
+            if np.max(x) <= 1:
+                x *= 255
+            x.astype(np.uint8)
+
+        if y.dtype != np.uint8:
+            # change to 0-255
+            if np.max(y) <= 1:
+                y *= 255
+            y.astype(np.uint8)
 
         if references.shape[2] > 1:
-            return ss.structural_similarity(references, perturbed, multichannel=True)
+            return ss.structural_similarity(x, y, multichannel=True)
         else:
-            return ss.structural_similarity(references, perturbed, multichannel=False)
+            return ss.structural_similarity(x, y, multichannel=False)
 
     def clip_perturbation(self, references: T, perturbed: T, epsilon: float) -> T:
         raise NotImplementedError('reducing SSIM-norms not yet supported')
@@ -97,3 +111,18 @@ l1 = LpDistance(1)
 l2 = LpDistance(2)
 linf = LpDistance(ep.inf)
 ssim = SSIMDistance()
+
+
+def get_distance(norm: str) -> Distance:
+    if norm == 'l0':
+        return l0
+    elif norm == 'l1':
+        return l1
+    elif norm == 'l2':
+        return l2
+    elif norm == 'linf':
+        return linf
+    elif norm == 'ssim':
+        return ssim
+    else:
+        raise NotImplementedError('no such norm')
