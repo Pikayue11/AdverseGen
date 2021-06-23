@@ -42,7 +42,7 @@ class ImageInfo():
 
 # to change the user upload image from jpg/jpeg into pngs format
 # becase simpleGUI can only display .png or .gif images
-def savePng(path, width, height, folder1 = 'images/pngs/', folder2 = 'images/tmp/', prefix1 = 'ori', prifix2 = 'oriPng'):
+def savePng(path, width, height, folder = 'images/tmp/', prefix = 'ori', new_extension = '.png'):
     if os.path.exists(path) == False:
         return '', ''
     file = os.path.basename(path)
@@ -51,29 +51,22 @@ def savePng(path, width, height, folder1 = 'images/pngs/', folder2 = 'images/tmp
         return '', ''
     file_name = file[:index]
     extension = file[index:]
-    new_extension = '.png'
-    if extension.lower() not in ('.jpg', '.png', '.jpeg'):
+    if extension.lower() not in ('.jpg', '.png', '.jpeg'):  # if it is in image format
         return '', ''
-    long_name1 = prefix1 + file_name + extension
-    long_name2 = prifix2 + file_name + new_extension
-    newPath1 = folder1 + long_name1
-    newPath2 = folder2 + long_name2
+    long_name = prefix + file_name + new_extension
+    newPath = folder + long_name
     im = Image.open(path)
     im = im.resize((width, height))
-    im.save(newPath1)
-    im.save(newPath2)
-    return newPath1, newPath2, long_name1, long_name2
-
+    im.save(newPath)
+    return newPath, long_name
 
 def UpDimension(threeDImage):  # work for single image
     return np.expand_dims(threeDImage, axis=0)
-
 
 def getImage(path):
     ori_image = Image.open(path)
     ori_image = np.array(ori_image)
     return UpDimension(ori_image)
-
 
 def AE_L0(images):  # work for single image
     _, new_images, new_labels, L0_norms, success = l0.L0_api(images)
@@ -81,7 +74,6 @@ def AE_L0(images):  # work for single image
     image_path = 'AdvResults/new_test1.png'
     im.save(image_path)
     return image_path, new_labels[0], L0_norms[0], success[0]
-
 
 def getAdvPath(attacker: ImageAttacker, ori_image, label, imageInfo: ImageInfo, window1, target_label=None):
     input = ori_image / 255

@@ -132,7 +132,7 @@ label_save = ['-la1-','-la2-']
 lay_save = ['-lay3-', '-lay4-', '-lay5-', '-lay6-']
 c_save = ['-c1-', '-c2-', '-c3-', '-c4-']
 del_save = ['-c1_del-', '-c2_del-', '-c3_del-', '-c4_del-']
-aaa = 1
+
 while True:
     event1, values1 = win1.read(timeout=100)
 
