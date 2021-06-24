@@ -153,7 +153,7 @@ while True:
 
         layout4 = [[sg.Image(size=(200, 200), data=ori_image_zoom,  key='-image4-')],
                    [sg.Text(f'label: {ori_label_name}', size=(25, 1), key='-ori_label4-', justification='center')],
-                   [sg.Button('Commit', pad=(20,0), key='-commit4-'), sg.Button('Cancel', key='-cancel4-')]]
+                   [sg.Button('Commit', pad=(35,0), key='-commit4-'), sg.Button('Cancel', key='-cancel4-')]]
         win4 = sg.Window('Target', layout4)
         win4_active = True
 

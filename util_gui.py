@@ -55,7 +55,7 @@ def savePng(path, resolution, folder = 'images/tmp/', prefix = 'ori', new_extens
     extension = file[index:]
     if extension.lower() not in ('.jpg', '.png', '.jpeg'):  # if it is in image format
         return '', ''
-    long_name = prefix + file_name + new_extension
+    long_name = prefix + '_' +file_name + new_extension
     newPath = folder + long_name
     im = Image.open(path)
     im = im.resize(resolution)
