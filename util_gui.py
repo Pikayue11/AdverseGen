@@ -10,17 +10,17 @@ import base64
 class ImageInfo():
     def __init__(self, database):
         self.database = database
-        self.width, self.height = self.update_resolution(database)
+        self.resolution = self.update_resolution(database)
 
     def set_database(self, database):
         self.database = database
 
     def update_resolution(self, database):
         if database.lower() == 'cifar-10':
-            return 32, 32
+            return (32, 32)
         if database.lower() == 'imagenet':
-            return 299, 299
-        return -1, -1
+            return (299, 299)
+        return (-1, -1)
 
     def mapLabel(self, index):
         prefix = self.database.lower()
@@ -42,7 +42,9 @@ class ImageInfo():
 
 # to change the user upload image from jpg/jpeg into pngs format
 # becase simpleGUI can only display .png or .gif images
-def savePng(path, width, height, folder = 'images/tmp/', prefix = 'ori', new_extension = '.png'):
+# newPath: image/tmp/a.png
+# long_name: a.png
+def savePng(path, resolution, folder = 'images/tmp/', prefix = 'ori', new_extension = '.png'):
     if os.path.exists(path) == False:
         return '', ''
     file = os.path.basename(path)
@@ -56,15 +58,16 @@ def savePng(path, width, height, folder = 'images/tmp/', prefix = 'ori', new_ext
     long_name = prefix + file_name + new_extension
     newPath = folder + long_name
     im = Image.open(path)
-    im = im.resize((width, height))
+    im = im.resize(resolution)
     im.save(newPath)
     return newPath, long_name
 
 def UpDimension(threeDImage):  # work for single image
     return np.expand_dims(threeDImage, axis=0)
 
-def getImage(path):
+def getImage(path, resolution):
     ori_image = Image.open(path)
+    ori_image = ori_image.resize(resolution)
     ori_image = np.array(ori_image)
     return UpDimension(ori_image)
 
@@ -84,7 +87,7 @@ def getAdvPath(attacker: ImageAttacker, ori_image, label, imageInfo: ImageInfo, 
     # image_path = 'AdvResults/new_test1.png'
     # im.save(image_path)
 
-    window1['-t6-'].update('Status: free            ')
+    window1['-t3-'].update('Status: free            ')
     im_zoom = convert_to_bytes(im, (200, 200))
     window1['-adv_image-'].update(data=im_zoom)
     pert = np.squeeze(adv_image - input)
@@ -103,7 +106,7 @@ def updateRunning(window1):
     status = ['States: running   ', 'States: running.  ', 'States: running.. ', 'States: running...']
     cnt = 1
     pert_image_zoom, adv_image_zoom = None, None
-    while window1['-t6-'].get()[0:18] in status:
+    while window1['-t3-'].get()[0:18] in status:
         # update mid process
         if os.path.exists(r'./images/tmp/diff_wkyTest.png'):
             pert_image_zoom = convert_to_bytes(r'./images/tmp/diff_wkyTest.png', (200, 200))

@@ -18,7 +18,7 @@ def ResNet152Init() -> Model:
     model.eval()
     return PyTorchModel(model, bounds=(0, 1))
 
-model_dict = {"ResNet18": ResNet18Init, "ResNet152": ResNet152Init}
+model_dict = {"resnet18": ResNet18Init, "resnet152": ResNet152Init}
 
 
 def modelImporter(mname: str):
