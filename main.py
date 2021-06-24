@@ -29,8 +29,7 @@ c4_del = sg.Button('Delete', pad=(44,0), key='-c4_del-')
 t1 = sg.Text('Please select database, network model and attack mode', key='-t1-')
 t2 = sg.Text('Please choose a jpg/jpeg/png picture in your computer', key='-t2-')
 t3 = sg.Text('States: free          ', font='Arial 12', pad=(180,10), key='-t3-')
-t4 = sg.Text('Please select the attack norm and constraints'
-             , key='-t4-')
+t4 = sg.Text('Please select the attack norm and constraints', key='-t4-')
 ori_label = sg.Text('', size=(25, 1), key='-ori_label-', justification='center')
 pert_value = sg.Text('', size=(25, 1), key='-pert_value-', justification='center')
 adv_label = sg.Text('', size=(25, 1), key='-adv_label-', justification='center')
@@ -111,7 +110,7 @@ layout1 = [[sg.Column(layout1_1, key='-lay1-')],
            [sg.HSeparator()],
            [sg.Column(layout1_8, key='-lay8-')],
            [sg.HSeparator()],
-           # [sg.Column(layout1_9, key='-lay9-')]
+           [sg.Column(layout1_9, key='-lay9-')]
            ]
 
 # Windows
@@ -123,6 +122,7 @@ threads = []
 win2_active = False
 win3_active = False
 win4_active = False
+image_select = False
 II.set_database(database_arr[0])
 imageAttacker.set_database(database_arr[0])
 
@@ -134,45 +134,49 @@ c_save = ['-c1-', '-c2-', '-c3-', '-c4-']
 del_save = ['-c1_del-', '-c2_del-', '-c3_del-', '-c4_del-']
 nw_save = ['-nw1-', '-nw2-']
 
+
 while True:
     event1, values1 = win1.read(timeout=100)
 
     if event1 in ('-cp1-', '-cp2-') and not win2_active:   # select a target image
-        raw_path = win1[event1].TKStringVar.get()
-        if raw_path == '':
+        tar_path = win1[event1].TKStringVar.get()
+        if tar_path == '':
             continue
-        new_path, _ = gui.savePng(raw_path, II.resolution, prefix='tar')
-        if new_path == '':  #   new path is in images/tmp/
+        new_tar_path, _ = gui.savePng(tar_path, II.resolution, prefix='tar')
+        if new_tar_path == '':  #   new path is in images/tmp/
             print('Warning! Please enter a correct image path!')
-        reshaped_raw_image = gui.getImage(raw_path, II.resolution) # numpy 4 dimension
+        reshaped_tar_image = gui.getImage(tar_path, II.resolution) # numpy 4 dimension
         index = database_arr.index(II.database)
         mname = win1[nw_save[index]].get()
-        ori_label_id = imageAttacker.get_label(mname.lower(), reshaped_raw_image / 255)
-        ori_label_name = II.mapLabel(ori_label_id)
-        ori_image_zoom = gui.convert_to_bytes(new_path, (200, 200))
+        tar_label_id = imageAttacker.get_label(mname.lower(), reshaped_tar_image / 255)
+        tar_label_name = II.mapLabel(tar_label_id)
+        tar_image_zoom = gui.convert_to_bytes(new_tar_path, (200, 200))
 
-        layout4 = [[sg.Image(size=(200, 200), data=ori_image_zoom,  key='-image4-')],
-                   [sg.Text(f'label: {ori_label_name}', size=(25, 1), key='-ori_label4-', justification='center')],
+        layout4 = [[sg.Image(size=(200, 200), data=tar_image_zoom,  key='-image4-')],
+                   [sg.Text(f'label: {tar_label_name}', size=(25, 1), key='-ori_label4-', justification='center')],
                    [sg.Button('Commit', pad=(35,0), key='-commit4-'), sg.Button('Cancel', key='-cancel4-')]]
         win4 = sg.Window('Target', layout4)
         win4_active = True
 
     if event1 == '-cp-' and not win2_active:   # select a original image
-        raw_path = win1[event1].TKStringVar.get()
-        if raw_path == '':
+        ori_path = win1[event1].TKStringVar.get()
+        if ori_path == '':
+            image_select = False
             continue
-        new_path, file_name = gui.savePng(raw_path, II.resolution, prefix='ori')
-        if new_path == '':  #   new path is in images/tmp/
+        new_ori_path, file_name = gui.savePng(ori_path, II.resolution, prefix='ori')
+        if new_ori_path == '':  #   new path is in images/tmp/
+            image_select = False
             print('Warning! Please enter a correct image path!')
-        reshaped_raw_image = gui.getImage(raw_path, II.resolution) # numpy 4 dimension
+        reshaped_ori_image = gui.getImage(ori_path, II.resolution) # numpy 4 dimension
 
         index = database_arr.index(II.database)
         mname = win1[nw_save[index]].get()
-        ori_label_id = imageAttacker.get_label(mname.lower(), reshaped_raw_image / 255)
+        ori_label_id = imageAttacker.get_label(mname.lower(), reshaped_ori_image / 255)
         ori_label_name = II.mapLabel(ori_label_id)
-        ori_image_zoom = gui.convert_to_bytes(new_path, (200, 200))
+        ori_image_zoom = gui.convert_to_bytes(ori_path, (200, 200))
         win1['-ori_image-'].update(data=ori_image_zoom)
         win1['-ori_label-'].update(f'label: {ori_label_name}')
+        image_select = True
 
     if event1 in ('-c1_del-', '-c2_del-', '-c3_del-', '-c4_del-') and not win2_active:  # after click one of 'Delete'
         index = del_save.index(event1)
@@ -199,6 +203,29 @@ while True:
             win1[label_save[index]].update(visible=False)
             win1[cp_save[index]].update(disabled=True)
 
+    if event1 == '-ra-' and not win2_active and image_select:    # click run attack
+        if win1['-t3-'].get()[8:12] == 'free':
+            win1['-t3-'].update('States: running   ')
+            reshaped_ori_image = gui.getImage(ori_path, II.resolution)  # numpy 4 dimension
+            t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, II, win1,))
+            threads.append(t1)
+            t1.start()
+            t2 = threading.Thread(target=gui.updateRunning, args=(win1,))
+            threads.append(t2)
+            t2.start()
+        else:
+            print('There is something running, please wait')
+
+    # if event1 == '-ra-' and not win2_active:  # click run attack ,remain work
+    #     if win1['-t3-'].get()[8:12] == 'free':
+    #         win1['-t3-'].update('States: running   ')
+    #         t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, ori_images, label, II, win1,))
+    #         threads.append(t1)
+    #         t1.start()
+    #         t2 = threading.Thread(target=gui.updateRunning, args=(win1,))
+    #         threads.append(t2)
+    #         t2.start()
+    #
     if event1 in (None, '-quit-') and not win2_active:  # click quit, stop all the thread and break
         for i in threads:
             tc._async_raise(i.ident, SystemExit)
@@ -259,7 +286,6 @@ while True:
         event4, values4 = win4.read(timeout=100)
         if event4 == '-commit4-':
             index = database_arr.index(II.database)
-            print(index)
             win1[label_save[index]].update(ori_label_name)
             win4.close()
             win4_active = False
@@ -271,38 +297,6 @@ while True:
 win1.close()
 
 # reference ###############################################################
-
-# if event1 == '-test-':
-#     pass
-
-# if event1 == '-test2-':
-#     pass
-
-# if event1 == '-ci-' and not win2_active:  # click check image
-#     path = win1['-ImagePath-'].get()
-#     if path == '':
-#         print('path is empty')
-#     else:
-#         II = gui.ImageInfo(win1['-group-'].get())
-#         ori_newPath = gui.savePng(path, II.width, II.height)
-#         if ori_newPath == '':
-#             print('Warning! Please enter a correct image path!')
-#         else:
-#             ori_images = gui.getImage(ori_newPath)
-#             ori_label_id = imageAttacker.get_label(win1['-nw1-'].get(), ori_images / 255)
-#             label = ori_label_id
-#             ori_label_name = II.mapLabel(ori_label_id)
-#             print("The label of the original image is", ori_label_name)
-#             ori_image_zoom = gui.convert_to_bytes(ori_newPath, (200, 200))
-#             win1['-ori_image-'].update(data=ori_image_zoom)
-#             win1['-ori_label'].update(f'label: {ori_label_name}')
-
-
-# if event1 == '-ImagePath-' and not win2_active:  # the common part, path of original image
-#     ori_new_path = win1['-ImagePath-'].get()
-#     ori_image = gui.getImage(ori_new_path)
-#     ori_image_zoom = gui.convert_to_bytes(ori_new_path, (200, 200))
-#     p1.update(data=ori_image_zoom)
 
 # if event1 == '-ra-' and not win2_active:  # click run attack ,remain work
 #     if win1['-t3-'].get()[8:12] == 'free':
