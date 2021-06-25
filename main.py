@@ -216,16 +216,6 @@ while True:
         else:
             print('There is something running, please wait')
 
-    # if event1 == '-ra-' and not win2_active:  # click run attack ,remain work
-    #     if win1['-t3-'].get()[8:12] == 'free':
-    #         win1['-t3-'].update('States: running   ')
-    #         t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, ori_images, label, II, win1,))
-    #         threads.append(t1)
-    #         t1.start()
-    #         t2 = threading.Thread(target=gui.updateRunning, args=(win1,))
-    #         threads.append(t2)
-    #         t2.start()
-    #
     if event1 in (None, '-quit-') and not win2_active:  # click quit, stop all the thread and break
         for i in threads:
             tc._async_raise(i.ident, SystemExit)
@@ -286,7 +276,7 @@ while True:
         event4, values4 = win4.read(timeout=100)
         if event4 == '-commit4-':
             index = database_arr.index(II.database)
-            win1[label_save[index]].update(ori_label_name)
+            win1[label_save[index]].update(tar_label_name)
             win4.close()
             win4_active = False
 
@@ -295,19 +285,3 @@ while True:
             win4_active = False
 
 win1.close()
-
-# reference ###############################################################
-
-# if event1 == '-ra-' and not win2_active:  # click run attack ,remain work
-#     if win1['-t3-'].get()[8:12] == 'free':
-#         win1['-t3-'].update('States: running   ')
-#         t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, ori_images, label, II, win1,))
-#         threads.append(t1)
-#         t1.start()
-#         t2 = threading.Thread(target=gui.updateRunning, args=(win1,))
-#         threads.append(t2)
-#         t2.start()
-#     else:
-#         print('There is something running, please wait')
-
-
