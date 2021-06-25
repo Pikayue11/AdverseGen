@@ -3,7 +3,6 @@ import util_gui as gui
 import threading
 import Thread_control as tc
 from backEnd.attacker import ImageAttacker
-import numpy as np
 
 # Initialize First place
 database_arr = ['CIFAR-10', 'ImageNet']
@@ -11,6 +10,9 @@ cons_number = 2
 cons_max = 4
 cons_list = ['Changed pixels', 'Largest pixel difference']
 cons_reverse = ['Structure similarity' ,'Euclidean distance']
+map_cons = {'l0': 0 ,'l8': 0, 'ssim': 0, 'l2': 0}
+map_value = {'l0': '' ,'l8': '', 'ssim': '', 'l2': ''}
+map_norm = {'Changed pixels': 'l0', 'Largest pixel difference':'l8', 'Structure similarity':'ssim', 'Euclidean distance':'l2' }
 
 # Window
 #   button
@@ -20,10 +22,10 @@ Quit = sg.Button('Quit', key='-quit-')
 
 Console = sg.Button('Console', key='-console-')
 Add_Cons = sg.Button('Add', key='-add-') # add more constraints, open second window
-c1_del = sg.Button('Delete', pad=(44,0), key='-c1_del-')
-c2_del = sg.Button('Delete', pad=(44,0), key='-c2_del-')
-c3_del = sg.Button('Delete', pad=(44,0), key='-c3_del-')
-c4_del = sg.Button('Delete', pad=(44,0), key='-c4_del-')
+c1_del = sg.Button('Delete', pad=(7,0), key='-c1_del-')
+c2_del = sg.Button('Delete', pad=(7,0), key='-c2_del-')
+c3_del = sg.Button('Delete', pad=(7,0), key='-c3_del-')
+c4_del = sg.Button('Delete', pad=(7,0), key='-c4_del-')
 
 #   text
 t1 = sg.Text('Please select database, network model and attack mode', key='-t1-')
@@ -44,7 +46,7 @@ c4 = sg.Text('', size=(22, 1), key='-c4-')
 evaluation = sg.Combo(['L0', 'L2', 'L∞', 'SSIM', 'Decision-based'], readonly=True, default_value='SSIM', key='-ev-')
 attackMode = sg.Combo(['Target', 'NonTarget'], default_value='Target', readonly=True, change_submits=True, key='-am1-')
 attackMode2 = sg.Combo(['Target', 'NonTarget'], default_value='Target', readonly=True, change_submits=True, key='-am2-')
-base = sg.Combo(['Score based', 'Decision based'], default_value='Score based', readonly=True, change_submits=True, key='-ba-')
+base_attack = sg.Combo(['Score based', 'Decision based'], default_value='Score based', readonly=True, change_submits=True, key='-ba-')
 
 #   Combo initailize:
 II = gui.ImageInfo(database_arr[0])
@@ -71,10 +73,16 @@ p2 = sg.Image(size=(100, 200), key='-pert_image-')
 p3 = sg.Image(size=(100, 200), key='-adv_image-')
 
 #   input
-c1_value = sg.InputText('', size=(5,1), key='-c1_value-')
-c2_value = sg.InputText('', size=(5,1), key='-c2_value-')
-c3_value = sg.InputText('', size=(5,1), key='-c3_value-')
-c4_value = sg.InputText('', size=(5,1), key='-c4_value-')
+c1_value = sg.InputText('', size=(5,1), change_submits=True, key='-c1_value-')
+c2_value = sg.InputText('', size=(5,1), change_submits=True, key='-c2_value-')
+c3_value = sg.InputText('', size=(5,1), change_submits=True, key='-c3_value-')
+c4_value = sg.InputText('', size=(5,1), change_submits=True, key='-c4_value-')
+
+# checkbox
+s1 = sg.Checkbox ('', default=False, change_submits=True, key='-s1-')
+s2 = sg.Checkbox ('', default=False, change_submits=True, key='-s2-')
+s3 = sg.Checkbox ('', default=False, change_submits=True, key='-s3-')
+s4 = sg.Checkbox ('', default=False, change_submits=True, key='-s4-')
 
 # temp ########################################################### for test
 testButton = sg.Button('test', key='-test-')
@@ -90,15 +98,13 @@ gro = sg.TabGroup([[tab1,tab2]], enable_events=True, key='-group-', tab_backgrou
 #   layout
 layout1_1 = [[t1],[gro]]
 layout1_2 = [[limit, limit_value, Add_Cons]]
-layout1_3 = [[c1, c1_value, c1_del]]
-layout1_4 = [[c2, c2_value, c2_del]]
-layout1_5 = [[c3, c3_value, c3_del]]
-layout1_6 = [[c4, c4_value, c4_del]]
-layout1_7 = [[f3], [base , run_attack]]
+layout1_3 = [[c1, c1_value, s1, c1_del]]
+layout1_4 = [[c2, c2_value, s2, c2_del]]
+layout1_5 = [[c3, c3_value, s3, c3_del]]
+layout1_6 = [[c4, c4_value, s4, c4_del]]
+layout1_7 = [[f3], [base_attack , run_attack]]
 layout1_8 = [[p1, p2, p3], [ori_label, pert_value, adv_label]]
-layout1_9 = [[Console, Stop, Quit, t3],
-             # [testButton, testButton2],
-           ]
+layout1_9 = [[Console, Stop, Quit, t3]]
 layout1 = [[sg.Column(layout1_1, key='-lay1-')],
            [sg.HSeparator()],
            [sg.Column(layout1_2, key='-lay2-')],
@@ -114,10 +120,9 @@ layout1 = [[sg.Column(layout1_1, key='-lay1-')],
            ]
 
 # Windows
-win1 = sg.Window('Our tool box', layout1, size=(700, 630))  # 700, 650
+win1 = sg.Window('Our tool box', layout1, size=(700, 700))  # 700, 650
 
 # Initialize second place
-
 threads = []
 win2_active = False
 win3_active = False
@@ -129,11 +134,12 @@ imageAttacker.set_database(database_arr[0])
 cp_save = ['-cp1-', '-cp2-']
 attMode_save = ['-am1-', '-am2-']
 label_save = ['-la1-','-la2-']
+nw_save = ['-nw1-', '-nw2-']
 lay_save = ['-lay3-', '-lay4-', '-lay5-', '-lay6-']
 c_save = ['-c1-', '-c2-', '-c3-', '-c4-']
+value_save = ['-c1_value-', '-c2_value-', '-c3_value-', '-c4_value-']
+check_save = ['-s1-', '-s2-', '-s3-', '-s4-']
 del_save = ['-c1_del-', '-c2_del-', '-c3_del-', '-c4_del-']
-nw_save = ['-nw1-', '-nw2-']
-
 
 while True:
     event1, values1 = win1.read(timeout=100)
@@ -188,7 +194,26 @@ while True:
             win1[lay_save[cons_number-1]].update(visible=False)
             for i in range(index, cons_number-1):
                 win1[c_save[i]].update(win1[c_save[i+1]].get())
+        str = map_norm[win1[c_save[index]].get()]
+        map_value[str] = ''
+        map_cons[str] = 0
+        win1[value_save[index]].update('')
+        win1[check_save[index]].update(False)
         cons_number -= 1
+
+    if event1 in ('-c1_value-', '-c2_value-', '-c3_value-', '-c4_value-') and not win2_active:  # enter the value of the constraints
+        index = value_save.index(event1)
+        prefix = win1[c_save[index]].get()[:2].lower()
+        map_value[prefix] = win1[event1].get()
+
+
+    if event1 in ('-s1-', '-s2-', '-s3-', '-s4-') and not win2_active:  # select one constraint
+        if win1[event1].get():
+            index = check_save.index(event1)
+            str = map_norm[win1[c_save[index]].get()]
+            map_cons[str] = 1
+        else:
+            map_cons[index] = 0
 
     if event1 == '-group-' and not win2_active:    # select database in table group, set database in II and image Attacker , win1['-group-'].get() returns 'CIFAR-10' or 'ImageNet'
         II.set_database(win1['-group-'].get())
@@ -207,7 +232,8 @@ while True:
         if win1['-t3-'].get()[8:12] == 'free':
             win1['-t3-'].update('States: running   ')
             reshaped_ori_image = gui.getImage(ori_path, II.resolution)  # numpy 4 dimension
-            t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, II, win1,))
+            based = win1['-ba-'].get()
+            t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, map_cons, map_value, based, II, win1,))
             threads.append(t1)
             t1.start()
             t2 = threading.Thread(target=gui.updateRunning, args=(win1,))

@@ -78,9 +78,9 @@ def AE_L0(images):  # work for single image
     im.save(image_path)
     return image_path, new_labels[0], L0_norms[0], success[0]
 
-def getAdvPath(attacker: ImageAttacker, ori_image, label, imageInfo: ImageInfo, window1, target_label=None):
+def getAdvPath(attacker: ImageAttacker, ori_image, label_id,map_constraints, map_value, based, imageInfo: ImageInfo, window1, target_label=None):
     input = ori_image / 255
-    adv_image, adv_label_id, norm, success = attacker.run(input, label, target_label, window1['-ev-'].get())
+    adv_image, adv_label_id, norm, success = attacker.run(input, label_id, target_label, map_constraints, map_value, based)
     img = (adv_image * 255).astype(np.uint8)
     adv_label_name = imageInfo.mapLabel(adv_label_id)
     im = Image.fromarray(img[0])
@@ -150,3 +150,9 @@ def convert_to_bytes(file_or_bytes, resize=None):
         img.save(bio, format="PNG")
         del img
         return bio.getvalue()
+
+def getSelectConstraints(map_cons):
+    map = {}
+    for i in map_cons:
+        if map_cons[i]:
+            map

@@ -15,7 +15,6 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
-
 class LogManagement():
     def __init__(self,
                  img,
