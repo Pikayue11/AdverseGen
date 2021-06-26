@@ -186,6 +186,9 @@ while True:
 
     if event1 in ('-c1_del-', '-c2_del-', '-c3_del-', '-c4_del-') and not win2_active:  # after click one of 'Delete'
         index = del_save.index(event1)
+        str = map_norm[win1[c_save[index]].get()]
+        map_value[str] = ''
+        map_cons[str] = 0
         cons_list.remove(win1[c_save[index]].get())
         cons_reverse.append(win1[c_save[index]].get())
         if index + 1 == cons_number:
@@ -194,17 +197,19 @@ while True:
             win1[lay_save[cons_number-1]].update(visible=False)
             for i in range(index, cons_number-1):
                 win1[c_save[i]].update(win1[c_save[i+1]].get())
-        str = map_norm[win1[c_save[index]].get()]
-        map_value[str] = ''
-        map_cons[str] = 0
-        win1[value_save[index]].update('')
-        win1[check_save[index]].update(False)
+                print(win1[value_save[i]].get())
+                print(win1[value_save[i + 1]].get())
+                print('+++++++++++++++++++++++++++++')
+                win1[value_save[i]].update(win1[value_save[i+1]].get())
+                win1[check_save[i]].update(win1[check_save[i+1]].get())
+        win1[value_save[cons_number-1]].update('')
+        win1[check_save[cons_number-1]].update(False)
         cons_number -= 1
 
     if event1 in ('-c1_value-', '-c2_value-', '-c3_value-', '-c4_value-') and not win2_active:  # enter the value of the constraints
         index = value_save.index(event1)
-        prefix = win1[c_save[index]].get()[:2].lower()
-        map_value[prefix] = win1[event1].get()
+        str = map_norm[win1[c_save[index]].get()]
+        map_value[str] = win1[event1].get()
 
 
     if event1 in ('-s1-', '-s2-', '-s3-', '-s4-') and not win2_active:  # select one constraint
@@ -228,19 +233,23 @@ while True:
             win1[label_save[index]].update(visible=False)
             win1[cp_save[index]].update(disabled=True)
 
-    if event1 == '-ra-' and not win2_active and image_select:    # click run attack
-        if win1['-t3-'].get()[8:12] == 'free':
-            win1['-t3-'].update('States: running   ')
-            reshaped_ori_image = gui.getImage(ori_path, II.resolution)  # numpy 4 dimension
-            based = win1['-ba-'].get()
-            t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, map_cons, map_value, based, II, win1,))
-            threads.append(t1)
-            t1.start()
-            t2 = threading.Thread(target=gui.updateRunning, args=(win1,))
-            threads.append(t2)
-            t2.start()
-        else:
-            print('There is something running, please wait')
+    if event1 == '-ra-' and not win2_active and image_select:    # click run attack, image_select: select an original image
+        # if win1['-t3-'].get()[8:12] == 'free':
+        #     win1['-t3-'].update('States: running   ')
+        #     reshaped_ori_image = gui.getImage(ori_path, II.resolution)  # numpy 4 dimension
+        #     based = win1['-ba-'].get()
+        #     t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, map_cons, map_value, based, II, win1,))
+        #     threads.append(t1)
+        #     t1.start()
+        #     t2 = threading.Thread(target=gui.updateRunning, args=(win1,))
+        #     threads.append(t2)
+        #     t2.start()
+        # else:
+        #     print('There is something running, please wait')
+        based = win1['-ba-'].get()
+        print(map_cons)
+        print(map_value)
+        print(based)
 
     if event1 in (None, '-quit-') and not win2_active:  # click quit, stop all the thread and break
         for i in threads:

@@ -73,7 +73,8 @@ class ImageAttacker:
 
     def run(self, input: T, label: T, target_label: T,  map_constraints, map_value, based, verbose: bool=True) -> Tuple[T, T, int, T]:
         self.set_algo(map_constraints, based)
-        distance = get_distance(evaluation)
+        # distance = get_distance(evaluation)
+        distance = based
         if verbose:
             logger = LogManagement(input, label[0], self.fmodel, distance, target=target_label, databaseName=self.database)
         else:
