@@ -156,8 +156,8 @@ def convert_to_bytes(file_or_bytes, resize=None):
 
 def constraint_conflict(map_cons, cur_str):
     all_constraints = ['l0', 'l2', 'l8', 'ssim']
-    conf1 = {'l0':['ssim'], 'ssim': ['l0']}
-    conf2 = {'l0':{'l2': ['l8'], 'l8':['l2']},
+    conf1 = {'l0':['ssim'], 'ssim': ['l0']}     # l0 and ssim is conflict
+    conf2 = {'l0':{'l2': ['l8'], 'l8':['l2']},  # when l0 is true, l2 nad l8 is conflict
              'l2':{},
              'l8': {},
              'ssim': {}}
@@ -169,7 +169,7 @@ def constraint_conflict(map_cons, cur_str):
                 if map_cons[i]:
                     conflicts.append(i)
 
-        for i in all_constraints:   # 在 l0 情况下 选了 l2 或 l8
+        for i in all_constraints:   # l0 is true/false, and then slect l2 or l8
             dict_temp = conf2[i]
             if dict_temp.__contains__(cur_str):
                 if map_cons[i]:
@@ -177,7 +177,7 @@ def constraint_conflict(map_cons, cur_str):
                         if j not in conflicts:
                             conflicts.append(j)
 
-            if i == cur_str:        # 在 l8 he l2 情况下 选了 l0
+            if i == cur_str:        # when l2 and l8 are both true, and then select l0
                 dict_temp = conf2[i]
                 for j in dict_temp:
                     if map_cons[j]:
