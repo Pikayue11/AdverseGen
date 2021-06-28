@@ -81,7 +81,7 @@ def AE_L0(images):  # work for single image
     im.save(image_path)
     return image_path, new_labels[0], L0_norms[0], success[0]
 
-def getAdvPath(attacker: ImageAttacker, ori_image, label_id,map_constraints, map_value, based, imageInfo: ImageInfo, window1, target_label=None):
+def getAdvPath(attacker: ImageAttacker, ori_image, label_id, map_constraints, map_value, based, imageInfo: ImageInfo, window1, target_label=None):
     input = ori_image / 255
     adv_image, adv_label_id, norm, success = attacker.run(input, label_id, target_label, map_constraints, map_value, based)
     img = (adv_image * 255).astype(np.uint8)
@@ -171,3 +171,15 @@ def constraint_format(map_cons, map_value):
             if not pattern_int.match(map_value[i]) and not pattern_float.match(map_value[i]):
                 return False
     return True
+
+def constraint_valueLimit(map_cons, map_value, based):
+    for i in map_cons:
+        if map_cons[i]:
+            if map_cons == 'l0':
+                pass
+            elif map_cons == 'l2':
+                pass
+            elif map_cons == 'l8':
+                pass
+            elif map_cons == 'ssim':
+                pass

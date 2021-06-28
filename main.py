@@ -249,23 +249,18 @@ while True:
             sg.popup('Please enter intergers or floats as constraints', title='warning')
             continue
 
-        # if win1['-t3-'].get()[8:12] == 'free':
-        #     win1['-t3-'].update('States: running   ')
-        #     reshaped_ori_image = gui.getImage(ori_path, II.resolution)  # numpy 4 dimension
-        #     based = win1['-ba-'].get()
-        #     t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, map_cons, map_value, based, II, win1,))
-        #     threads.append(t1)
-        #     t1.start()
-        #     t2 = threading.Thread(target=gui.updateRunning, args=(win1,))
-        #     threads.append(t2)
-        #     t2.start()
-        # else:
-        #     print('There is something running, please wait')
-
-        based = win1['-ba-'].get()
-        print(map_cons)
-        print(map_value)
-        print(based)
+        if win1['-t3-'].get()[8:12] == 'free':
+            win1['-t3-'].update('States: running   ')
+            reshaped_ori_image = gui.getImage(ori_path, II.resolution)  # numpy 4 dimension
+            based = win1['-ba-'].get()
+            t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, map_cons, map_value, based, II, win1,))
+            threads.append(t1)
+            t1.start()
+            t2 = threading.Thread(target=gui.updateRunning, args=(win1,))
+            threads.append(t2)
+            t2.start()
+        else:
+            print('There is something running, please wait')
 
     if event1 in (None, '-quit-') and not win2_active:  # click quit, stop all the thread and break
         for i in threads:
