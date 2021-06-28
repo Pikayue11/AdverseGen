@@ -6,6 +6,9 @@ import os
 import time
 import io
 import base64
+import re
+pattern_float = re.compile(r'^[-+]?[0-9]+\.[0-9]+$')
+pattern_int = re.compile(r'^[-+]?[0-9]+$')
 
 class ImageInfo():
     def __init__(self, database):
@@ -151,8 +154,21 @@ def convert_to_bytes(file_or_bytes, resize=None):
         del img
         return bio.getvalue()
 
-def getSelectConstraints(map_cons):
-    map = {}
+def constraint_conflict(map_cons, cur_str):
+    conf = {'l0':['ssim'], 'ssim': ['l0']}
+    arr1 = []
+    if conf.__contains__(cur_str):
+        if map_cons[cur_str]:
+            arr2 = conf[cur_str]
+            for i in arr2:
+                if map_cons[i]:
+                    arr1.append(i)
+    return arr1
+
+
+def constraint_format(map_cons, map_value):
     for i in map_cons:
         if map_cons[i]:
-            map
+            if not pattern_int.match(map_value[i]) and not pattern_float.match(map_value[i]):
+                return False
+    return True

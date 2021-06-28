@@ -13,6 +13,7 @@ cons_reverse = ['Structure similarity' ,'Euclidean distance']
 map_cons = {'l0': 0 ,'l8': 0, 'ssim': 0, 'l2': 0}
 map_value = {'l0': '' ,'l8': '', 'ssim': '', 'l2': ''}
 map_norm = {'Changed pixels': 'l0', 'Largest pixel difference':'l8', 'Structure similarity':'ssim', 'Euclidean distance':'l2' }
+map_norm_re = {'l0':'Changed pixels', 'l8':'Largest pixel difference', 'ssim':'Structure similarity', 'l2':'Euclidean distance' }
 
 # Window
 #   button
@@ -128,6 +129,7 @@ win2_active = False
 win3_active = False
 win4_active = False
 image_select = False
+
 II.set_database(database_arr[0])
 imageAttacker.set_database(database_arr[0])
 
@@ -213,12 +215,17 @@ while True:
 
 
     if event1 in ('-s1-', '-s2-', '-s3-', '-s4-') and not win2_active:  # select one constraint
+        index = check_save.index(event1)
+        str = map_norm[win1[c_save[index]].get()]
         if win1[event1].get():
-            index = check_save.index(event1)
-            str = map_norm[win1[c_save[index]].get()]
             map_cons[str] = 1
         else:
-            map_cons[index] = 0
+            map_cons[str] = 0
+        conflict_arr = gui.constraint_conflict(map_cons, str)
+        for i in range(cons_number):
+            if map_norm[win1[c_save[i]].get()] in conflict_arr:
+                win1[check_save[i]].update(False)
+                map_cons[map_norm[win1[c_save[i]].get()]] = 0
 
     if event1 == '-group-' and not win2_active:    # select database in table group, set database in II and image Attacker , win1['-group-'].get() returns 'CIFAR-10' or 'ImageNet'
         II.set_database(win1['-group-'].get())
@@ -233,7 +240,15 @@ while True:
             win1[label_save[index]].update(visible=False)
             win1[cp_save[index]].update(disabled=True)
 
-    if event1 == '-ra-' and not win2_active and image_select:    # click run attack, image_select: select an original image
+
+    if event1 == '-ra-' and not win2_active:    # click run attack, image_select: select an original image
+        if not image_select:
+            sg.popup('Please choose an original picture first!\nYou can do it by clicking "choose picture to attack"', title='warning')
+            continue
+        if not gui.constraint_format(map_cons, map_value):
+            sg.popup('Please enter intergers or floats as constraints', title='warning')
+            continue
+
         # if win1['-t3-'].get()[8:12] == 'free':
         #     win1['-t3-'].update('States: running   ')
         #     reshaped_ori_image = gui.getImage(ori_path, II.resolution)  # numpy 4 dimension
@@ -246,6 +261,7 @@ while True:
         #     t2.start()
         # else:
         #     print('There is something running, please wait')
+
         based = win1['-ba-'].get()
         print(map_cons)
         print(map_value)
