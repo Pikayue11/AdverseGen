@@ -155,14 +155,39 @@ def convert_to_bytes(file_or_bytes, resize=None):
         return bio.getvalue()
 
 def constraint_conflict(map_cons, cur_str):
-    conf = {'l0':['ssim'], 'ssim': ['l0']}
+    all_constraints = ['l0', 'l2', 'l8', 'ssim']
+    conf1 = {'l0':['ssim'], 'ssim': ['l0']}
+    conf2 = {'l0':{'l2': ['l8'], 'l8':['l2']},
+             'l2':{},
+             'l8': {},
+             'ssim': {}}
+
     conflicts = []
-    if conf.__contains__(cur_str):
-        if map_cons[cur_str]:
-            arr2 = conf[cur_str]
-            for i in arr2:
+    if map_cons[cur_str]:
+        if conf1.__contains__(cur_str):
+            for i in conf1[cur_str]:
                 if map_cons[i]:
                     conflicts.append(i)
+
+        for i in all_constraints:   # 在 l0 情况下 选了 l2 或 l8
+            dict_temp = conf2[i]
+            if dict_temp.__contains__(cur_str):
+                if map_cons[i]:
+                    for j in dict_temp[cur_str]:
+                        if j not in conflicts:
+                            conflicts.append(j)
+
+            if i == cur_str:        # 在 l8 he l2 情况下 选了 l0
+                dict_temp = conf2[i]
+                for j in dict_temp:
+                    if map_cons[j]:
+                        for k in dict_temp[j]:
+                            if map_cons[k]:
+                                if j not in conflicts:
+                                    conflicts.append(j)
+                                if k not in conflicts:
+                                    conflicts.append(k)
+
     return conflicts
 
 def constraint_format(map_cons, map_value):
@@ -175,11 +200,12 @@ def constraint_format(map_cons, map_value):
 def constraint_valueLimit(map_cons, map_value, based):
     for i in map_cons:
         if map_cons[i]:
-            if map_cons == 'l0':
+            if i == 'l0':
+                value = float(map_value[i])
                 pass
-            elif map_cons == 'l2':
+            elif i == 'l2':
                 pass
-            elif map_cons == 'l8':
+            elif i == 'l8':
                 pass
-            elif map_cons == 'ssim':
+            elif i == 'ssim':
                 pass
