@@ -13,7 +13,6 @@ cons_reverse = ['Structure similarity' ,'Euclidean distance']
 map_cons = {'l0': 0 ,'l8': 0, 'ssim': 0, 'l2': 0}
 map_value = {'l0': '' ,'l8': '', 'ssim': '', 'l2': ''}
 map_norm = {'Changed pixels': 'l0', 'Largest pixel difference':'l8', 'Structure similarity':'ssim', 'Euclidean distance':'l2' }
-map_norm_re = {'l0':'Changed pixels', 'l8':'Largest pixel difference', 'ssim':'Structure similarity', 'l2':'Euclidean distance' }
 
 # Window
 #   button
@@ -44,7 +43,6 @@ c3 = sg.Text('', size=(22, 1), key='-c3-')
 c4 = sg.Text('', size=(22, 1), key='-c4-')
 
 #   Combo
-evaluation = sg.Combo(['L0', 'L2', 'L∞', 'SSIM', 'Decision-based'], readonly=True, default_value='SSIM', key='-ev-')
 attackMode = sg.Combo(['Target', 'NonTarget'], default_value='Target', readonly=True, change_submits=True, key='-am1-')
 attackMode2 = sg.Combo(['Target', 'NonTarget'], default_value='Target', readonly=True, change_submits=True, key='-am2-')
 base_attack = sg.Combo(['Score based', 'Decision based'], default_value='Score based', readonly=True, change_submits=True, key='-ba-')
@@ -84,10 +82,6 @@ s1 = sg.Checkbox ('', default=False, change_submits=True, key='-s1-')
 s2 = sg.Checkbox ('', default=False, change_submits=True, key='-s2-')
 s3 = sg.Checkbox ('', default=False, change_submits=True, key='-s3-')
 s4 = sg.Checkbox ('', default=False, change_submits=True, key='-s4-')
-
-# temp ########################################################### for test
-testButton = sg.Button('test', key='-test-')
-testButton2 = sg.Button('test2', key='-test2-')
 
 #   tables
 tab1_layout = [[network, attackMode, labelArr], [f1]] #cifar-10
@@ -199,9 +193,6 @@ while True:
             win1[lay_save[cons_number-1]].update(visible=False)
             for i in range(index, cons_number-1):
                 win1[c_save[i]].update(win1[c_save[i+1]].get())
-                print(win1[value_save[i]].get())
-                print(win1[value_save[i + 1]].get())
-                print('+++++++++++++++++++++++++++++')
                 win1[value_save[i]].update(win1[value_save[i+1]].get())
                 win1[check_save[i]].update(win1[check_save[i+1]].get())
         win1[value_save[cons_number-1]].update('')

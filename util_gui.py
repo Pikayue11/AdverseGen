@@ -7,6 +7,7 @@ import time
 import io
 import base64
 import re
+
 pattern_float = re.compile(r'^([-+]?[0-9]+\.[0-9]+)$')
 pattern_int = re.compile(r'^([-+]?0|[1-9][0-9]*)$')
 
@@ -187,7 +188,6 @@ def constraint_conflict(map_cons, cur_str):
                                     conflicts.append(j)
                                 if k not in conflicts:
                                     conflicts.append(k)
-
     return conflicts
 
 def constraint_format(map_cons, map_value):
@@ -197,7 +197,7 @@ def constraint_format(map_cons, map_value):
                 return False
     return True
 
-def constraint_valueLimit(map_cons, map_value, based):
+def constraint_valueLimit(map_cons, map_value, based):  # based: 'Score based', 'Decision based'
     for i in map_cons:
         if map_cons[i]:
             if i == 'l0':
