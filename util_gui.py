@@ -156,15 +156,14 @@ def convert_to_bytes(file_or_bytes, resize=None):
 
 def constraint_conflict(map_cons, cur_str):
     conf = {'l0':['ssim'], 'ssim': ['l0']}
-    arr1 = []
+    conflicts = []
     if conf.__contains__(cur_str):
         if map_cons[cur_str]:
             arr2 = conf[cur_str]
             for i in arr2:
                 if map_cons[i]:
-                    arr1.append(i)
-    return arr1
-
+                    conflicts.append(i)
+    return conflicts
 
 def constraint_format(map_cons, map_value):
     for i in map_cons:
