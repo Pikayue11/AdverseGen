@@ -146,7 +146,7 @@ while True:
             continue
         new_tar_path, _ = gui.savePng(tar_path, II.resolution, prefix='tar')
         if new_tar_path == '':  #   new path is in images/tmp/
-            print('Warning! Please enter a correct image path!')
+            sg.popup('Warning! Please enter a correct image path!', title='Warning')
         reshaped_tar_image = gui.getImage(tar_path, II.resolution) # numpy 4 dimension
         index = database_arr.index(II.database)
         mname = win1[nw_save[index]].get()
@@ -168,7 +168,7 @@ while True:
         new_ori_path, file_name = gui.savePng(ori_path, II.resolution, prefix='ori')
         if new_ori_path == '':  #   new path is in images/tmp/
             image_select = False
-            print('Warning! Please enter a correct image path!')
+            sg.popup('Warning! Please enter a correct image path!', title='Warning')
         reshaped_ori_image = gui.getImage(ori_path, II.resolution) # numpy 4 dimension
 
         index = database_arr.index(II.database)
@@ -204,7 +204,6 @@ while True:
         str = map_norm[win1[c_save[index]].get()]
         map_value[str] = win1[event1].get()
 
-
     if event1 in ('-s1-', '-s2-', '-s3-', '-s4-') and not win2_active:  # select one constraint
         index = check_save.index(event1)
         str = map_norm[win1[c_save[index]].get()]
@@ -231,13 +230,21 @@ while True:
             win1[label_save[index]].update(visible=False)
             win1[cp_save[index]].update(disabled=True)
 
-
     if event1 == '-ra-' and not win2_active:    # click run attack, image_select: select an original image
         if not image_select:
-            sg.popup('Please choose an original picture first!\n\nYou can do it by clicking "choose picture to attack"', title='warning')
+            sg.popup('Please choose an original picture first!\n\nYou can do it by clicking "choose picture to attack"', title='Warning')
             continue
+
+        con_cnt = 0
+        for i in map_cons:
+            if map_cons[i]:
+                con_cnt += 1
+        if con_cnt == 0:
+            sg.popup('Please select at least one constraint', title='Warning')
+            continue
+
         if not gui.constraint_format(map_cons, map_value):
-            sg.popup('Please enter intergers or floats as constraints', title='warning')
+            sg.popup('Please enter interger or float as value of constraints', title='Warning')
             continue
 
         if win1['-t3-'].get()[8:12] == 'free':
@@ -251,7 +258,7 @@ while True:
             threads.append(t2)
             t2.start()
         else:
-            print('There is something running, please wait')
+            sg.popup('There is something running, please wait', title='Warning')
 
     if event1 in (None, '-quit-') and not win2_active:  # click quit, stop all the thread and break
         for i in threads:
@@ -275,7 +282,7 @@ while True:
                        [sg.Button('ok', key='-ok2-'), sg.Button('cancel', key='-cancel2-')]]
             win2 = sg.Window('Constraints', layout2)
         else:
-            sg.popup('You have added all the constraints', title='warning')
+            sg.popup('You have added all the constraints', title='Warning')
 
     if win2_active:
         event2, valus2 = win2.read(timeout=100)

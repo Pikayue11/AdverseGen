@@ -158,7 +158,7 @@ def convert_to_bytes(file_or_bytes, resize=None):
 def constraint_conflict(map_cons, cur_str):
     all_constraints = ['l0', 'l2', 'l8', 'ssim']
     conf1 = {'l0':['ssim'], 'ssim': ['l0']}     # l0 and ssim is conflict
-    conf2 = {'l0':{'l2': ['l8'], 'l8':['l2']},  # when l0 is true, l2 nad l8 is conflict
+    conf2 = {'l0':{'l2': ['l8'], 'l8':['l2']},  # when l0 is true, l2 and l8 is conflict
              'l2':{},
              'l8': {},
              'ssim': {}}
