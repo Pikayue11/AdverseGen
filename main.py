@@ -258,7 +258,7 @@ while True:
             threads.append(t2)
             t2.start()
         else:
-            sg.popup('There is something running, please wait', title='Warning')
+            sg.popup('There is something running, please wait\n\nYou can click "stop" to stop current attack', title='Warning')
 
     if event1 in (None, '-quit-') and not win2_active:  # click quit, stop all the thread and break
         for i in threads:
