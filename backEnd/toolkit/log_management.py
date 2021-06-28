@@ -20,11 +20,13 @@ class LogManagement():
                  img,
                  oriLabel,
                  modelwithName,  # [model, name]
-                 norm,
+                 distance,
+                 old_norm,
+                 imageName='testImage',
                  target=None,
                  databaseName='CIFAR-10',
-                 imageName='wkyTest',
-                 extention='png'):
+                 extention='png'
+                 ):
         self.imageName = imageName
         self.extention = extention
         self.model = modelwithName[0]
@@ -38,25 +40,33 @@ class LogManagement():
         else:
             self.isTarget = True
             self.target = target[0]
-        self.norm = norm
+        self.distance = distance
         self.img = img
+        self.norm = self.updateNorm(old_norm)
         self.logStart()
+
+    def updateNorm(self, old_norm):
+        new_norm = {}
+        map_formal = {'l0': 'L0 distance', 'l2': 'L2 distance', 'l8': 'Linf distance', 'ssim': 'SSIM'}
+        for i in old_norm:
+            new_norm[map_formal[i]] = old_norm[i]
+        return new_norm
 
     def logStart(self):
         attackType = 'target' if self.isTarget else 'non-target'
         targetMsg = 'Target label: %s' % (mapLabel(self.databaseName, self.target)) if self.isTarget else ''
         logger.info('\n*** \n    Launching an attack to image %s\n' % (self.imageName) +
                     '    Norm: %s\n' % (self.norm) +
-                    '    Attack type: %s' % (attackType) +
-                    '    Original label: %s\n    ' % (self.oriLabelStr) + targetMsg +
-                    '\n    Model: %s\n' % (self.modelName) +
+                    '    Attack type: %s\n' % (attackType) +
+                    '    Original label: %s\n' % (self.oriLabelStr) + targetMsg +
+                    '    Model: %s\n' % (self.modelName) +
                     '    Database: %s\n' % (self.databaseName) +
                     '***')
         print('\n*** \n    Launching an attack to image %s\n' % (self.imageName) +
               '    Norm: %s\n' % (self.norm) +
-              '    Attack type: %s' % (attackType) +
-              '    Original label: %s\n    ' % (self.oriLabelStr) + targetMsg +
-              '\n    Model: %s\n' % (self.modelName) +
+              '    Attack type: %s\n' % (attackType) +
+              '    Original label: %s\n' % (self.oriLabelStr) + targetMsg +
+              '    Model: %s\n' % (self.modelName) +
               '    Database: %s\n' % (self.databaseName) +
               '***')
         saveImage(self.img[0], self.imageName, self.extention, 'ori')
@@ -74,7 +84,7 @@ class LogManagement():
 
     def updateTarget(self, advImg, iter):
         cons = getCons(self.model, advImg[0])
-        normValue = getNormValue(self.img, advImg, self.norm)
+        normValue = getNormValue(self.img, advImg, self.distance)
         if (iter <= 0):
             logger.info('origin_con: %.4f, target_con: %.4f, %s: %.3f' % (
             cons[int(self.oriLabel)], cons[int(self.target)], self.norm, normValue))

@@ -51,20 +51,13 @@ def mapLabel(database, index):
         print("mapLabel, not cifar 10, in log_util")
         return ''
 
-from skimage.metrics import _structural_similarity as ss
-def getNormValue(img, advImg, norm):
-    if norm == 'SSIM':
-        return compute_ssim(img, advImg)
-    return -1
 
-def compute_ssim(img1, img2): # [32,32,3]
-    img1 = img1.copy().astype(np.uint8)
-    img2 = img2.copy().astype(np.uint8)
-    if img1.shape[2] > 1:
-        return ss.structural_similarity(img1, img2, multichannel=True)
-    else:
-        return ss.structural_similarity(img1, img2, multichannel=False)
 
+def getNormValue(img, advImg, distance):
+    norm_values = []
+    for i in distance:
+        norm_values.append(i(img, advImg))
+    return norm_values
 
 import torch
 from torchvision import transforms

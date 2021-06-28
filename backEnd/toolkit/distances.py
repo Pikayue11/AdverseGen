@@ -120,7 +120,7 @@ def get_distance(norm: str) -> Distance:
         return l1
     elif norm == 'l2':
         return l2
-    elif norm == 'linf':
+    elif norm == 'l8':
         return linf
     elif norm == 'ssim':
         return ssim

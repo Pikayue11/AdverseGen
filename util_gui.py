@@ -46,8 +46,8 @@ class ImageInfo():
 
 # to change the user upload image from jpg/jpeg into pngs format
 # becase simpleGUI can only display .png or .gif images
-# newPath: image/tmp/a.png
-# long_name: a.png
+# newPath: image/tmp/ori_a.png
+# file_name: a.png
 def savePng(path, resolution, folder = 'images/tmp/', prefix = 'ori', new_extension = '.png'):
     if os.path.exists(path) == False:
         return '', ''
@@ -64,7 +64,7 @@ def savePng(path, resolution, folder = 'images/tmp/', prefix = 'ori', new_extens
     im = Image.open(path)
     im = im.resize(resolution)
     im.save(newPath)
-    return newPath, long_name
+    return newPath, file_name
 
 def UpDimension(threeDImage):  # work for single image
     return np.expand_dims(threeDImage, axis=0)
@@ -82,9 +82,9 @@ def AE_L0(images):  # work for single image
     im.save(image_path)
     return image_path, new_labels[0], L0_norms[0], success[0]
 
-def getAdvPath(attacker: ImageAttacker, ori_image, label_id, map_constraints, map_value, based, imageInfo: ImageInfo, window1, target_label=None):
+def getAdvPath(attacker: ImageAttacker, ori_image, label_id, new_map, based, file_name,imageInfo: ImageInfo, window1, target_label=None):
     input = ori_image / 255
-    adv_image, adv_label_id, norm, success = attacker.run(input, label_id, target_label, map_constraints, map_value, based)
+    adv_image, adv_label_id, norm, success = attacker.run(input, label_id, target_label, new_map, based, file_name)
     img = (adv_image * 255).astype(np.uint8)
     adv_label_name = imageInfo.mapLabel(adv_label_id)
     im = Image.fromarray(img[0])
@@ -157,8 +157,8 @@ def convert_to_bytes(file_or_bytes, resize=None):
 
 def constraint_conflict(map_cons, cur_str):
     all_constraints = ['l0', 'l2', 'l8', 'ssim']
-    conf1 = {'l0':['ssim'], 'ssim': ['l0']}     # l0 and ssim is conflict
-    conf2 = {'l0':{'l2': ['l8'], 'l8':['l2']},  # when l0 is true, l2 and l8 is conflict
+    conf1 = {'l0':['ssim'], 'ssim': ['l0'], 'l2': ['l8'], 'l8':['l2']}     # l0 and ssim is conflict, l2 and l8 is conflict
+    conf2 = {'l0':{},  # for instance, 'l0':{'l2': ['l8'], 'l8':['l2']}, indicate l2 and l8 is conflict only when l0 is true,
              'l2':{},
              'l8': {},
              'ssim': {}}

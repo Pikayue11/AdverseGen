@@ -14,6 +14,7 @@ map_cons = {'l0': 0 ,'l8': 0, 'ssim': 0, 'l2': 0}
 map_value = {'l0': '' ,'l8': '', 'ssim': '', 'l2': ''}
 map_norm = {'Changed pixels': 'l0', 'Largest pixel difference':'l8', 'Structure similarity':'ssim', 'Euclidean distance':'l2' }
 
+
 # Window
 #   button
 run_attack = sg.Button('Run attack', key='-ra-')
@@ -251,7 +252,12 @@ while True:
             win1['-t3-'].update('States: running   ')
             reshaped_ori_image = gui.getImage(ori_path, II.resolution)  # numpy 4 dimension
             based = win1['-ba-'].get()
-            t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, map_cons, map_value, based, II, win1,))
+
+            new_map = {}
+            for i in map_cons:
+                if map_cons[i]:
+                    new_map[i] = float(map_value[i])
+            t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, new_map, based, file_name, II, win1,))
             threads.append(t1)
             t1.start()
             t2 = threading.Thread(target=gui.updateRunning, args=(win1,))

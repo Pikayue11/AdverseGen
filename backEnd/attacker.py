@@ -52,17 +52,17 @@ class ImageAttacker:
     # map_cons = {'l0': 1, 'l8': 0, 'ssim': 0, 'l2': 0}  # ch:l0, la:l8, st:ssim, eu:l2
     # map_value = {'l0': '3', 'l8': '', 'ssim': '', 'l2': ''}
     # 'Score based', 'Decision based'
-    def set_algo(self, map_constraints, based):
+    def set_algo(self, new_map, based):
         if based == 'Decision based':
             self.algo = algo_dict['HopSkipJump']()
             return
-        if map_constraints['l0'] or (map_constraints['l0'] and map_constraints['l8']):
+        if new_map.__contains__('l0') or (new_map.__contains__('l0') and new_map.__contains__('l8')):
             self.algo = algo_dict['CornerSearch']()
-        elif map_constraints['l8']:
+        elif new_map.__contains__('l8'):
             self.algo = algo_dict['PatchAttack']()
-        elif map_constraints['ssim'] == 'SSIM':
+        elif new_map.__contains__('ssim'):
             self.algo = algo_dict['PQPAttack']()
-        elif map_constraints['l2']:
+        elif new_map.__contains__('l2'):
             self.algo = algo_dict['LeBA']()
         else:
             raise ValueError('No Algorithm implemented.')
@@ -71,12 +71,15 @@ class ImageAttacker:
         if self.fmodel[0] is None or self.fmodel[1] != mname:
             self.fmodel[0], self.fmodel[1] = modelImporter(mname)
 
-    def run(self, input: T, label: T, target_label: T,  map_constraints, map_value, based, verbose: bool=True) -> Tuple[T, T, int, T]:
-        self.set_algo(map_constraints, based)
-        # distance = get_distance(evaluation)
-        distance = based
+    def run(self, input: T, label: T, target_label: T,  new_map, based, file_name, verbose: bool=True) -> Tuple[T, T, int, T]:
+        self.set_algo(new_map, based)
+        distances = []
+        for i in new_map:
+            distances.append(get_distance(i))
+
+        # distance = based
         if verbose:
-            logger = LogManagement(input, label[0], self.fmodel, distance, target=target_label, databaseName=self.database)
+            logger = LogManagement(input, label[0], self.fmodel, distances, new_map, file_name, target=target_label, databaseName=self.database)
         else:
             logger = None
 
