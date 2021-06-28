@@ -7,8 +7,8 @@ import time
 import io
 import base64
 import re
-pattern_float = re.compile(r'^[-+]?[0-9]+\.[0-9]+$')
-pattern_int = re.compile(r'^[-+]?[0-9]+$')
+pattern_float = re.compile(r'^([-+]?[0-9]+\.[0-9]+)$')
+pattern_int = re.compile(r'^([-+]?0|[1-9][0-9]*)$')
 
 class ImageInfo():
     def __init__(self, database):

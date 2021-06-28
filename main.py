@@ -243,7 +243,7 @@ while True:
 
     if event1 == '-ra-' and not win2_active:    # click run attack, image_select: select an original image
         if not image_select:
-            sg.popup('Please choose an original picture first!\nYou can do it by clicking "choose picture to attack"', title='warning')
+            sg.popup('Please choose an original picture first!\n\nYou can do it by clicking "choose picture to attack"', title='warning')
             continue
         if not gui.constraint_format(map_cons, map_value):
             sg.popup('Please enter intergers or floats as constraints', title='warning')
