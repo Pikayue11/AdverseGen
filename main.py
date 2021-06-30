@@ -137,6 +137,7 @@ c_save = ['-c1-', '-c2-', '-c3-', '-c4-']
 value_save = ['-c1_value-', '-c2_value-', '-c3_value-', '-c4_value-']
 check_save = ['-s1-', '-s2-', '-s3-', '-s4-']
 del_save = ['-c1_del-', '-c2_del-', '-c3_del-', '-c4_del-']
+labelArr_save = ['-la1-', '-la2-']
 
 while True:
     event1, values1 = win1.read(timeout=100)
@@ -257,7 +258,13 @@ while True:
             for i in map_cons:
                 if map_cons[i]:
                     new_map[i] = float(map_value[i])
-            t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, new_map, based, file_name, II, win1,))
+
+            index = database_arr.index(win1['-group-'].get())
+            if win1[attMode_save[index]].get().lower() == 'target':
+                target_label_str = win1[labelArr_save[index]].get()
+                t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, new_map, based, file_name, II, win1, II.getLabelArray().index(target_label_str),))
+            else:
+                t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, new_map, based, file_name, II, win1,))
             threads.append(t1)
             t1.start()
             t2 = threading.Thread(target=gui.updateRunning, args=(win1, file_name,))
@@ -275,7 +282,7 @@ while True:
         for i in threads:
             tc._async_raise(i.ident, SystemExit)
         threads = []
-        win1['-t3-'].update(values = 'States: free          ')
+        win1['-t3-'].update('States: free          ')
         win1['-ori_image-'].update()
         win1['-adv_image-'].update()
         print('stopped')

@@ -88,8 +88,11 @@ class ImageAttacker:
         else:
             if not isinstance(label, list):
                 label = [label]
+                label = np.array(label)
             if not isinstance(target_label, list):
                 target_label = [target_label]
+                target_label = np.array(target_label)
+
             criterion = TargetedMisclassification(labels=label, target_classes=target_label)
             _, advs, success = self.algo(self.fmodel[0], input, criterion, epsilons=None, logger=logger)
         adv_id = self.get_label(self.fmodel[1], advs)

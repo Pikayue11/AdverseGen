@@ -89,18 +89,20 @@ class SSIMDistance(Distance):
             # change to 0-255
             if np.max(x) <= 1:
                 x *= 255
-            x.astype(np.uint8)
+            x = x.astype(np.uint8)
 
         if y.dtype != np.uint8:
             # change to 0-255
             if np.max(y) <= 1:
                 y *= 255
-            y.astype(np.uint8)
+            y = y.astype(np.uint8)
+
+
 
         if references.shape[2] > 1:
-            return ss.structural_similarity(x, y, multichannel=True)
+            return [ss.structural_similarity(x, y, multichannel=True)]
         else:
-            return ss.structural_similarity(x, y, multichannel=False)
+            return [ss.structural_similarity(x, y, multichannel=False)]
 
     def clip_perturbation(self, references: T, perturbed: T, epsilon: float) -> T:
         raise NotImplementedError('reducing SSIM-norms not yet supported')

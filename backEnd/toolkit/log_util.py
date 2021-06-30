@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+import torch
 
 def saveImage(advImage, filename, extension, type): ## type: ori, adv, diff
     folder_name = './images/tmp/'
@@ -15,19 +16,6 @@ def denormalize_images(image, type):
             image *= 255
     return image.astype(np.uint8)
 
-# def getFileNameAndExtension(path):
-#     slashIndex = path.rindex('/')
-#     if(slashIndex == -1 or slashIndex+1 == len(path)):
-#         print('Please choose a right file path')
-#         return None, None
-#     extensionIndex = path.rindex('.')
-#     if (extensionIndex == -1 or extensionIndex + 1 == len(path) or extensionIndex == slashIndex + 1):
-#         print('Please choose a right file path with a correct extension')
-#         return None, None
-#     extention = path[extensionIndex + 1:]
-#     fileName = path[slashIndex + 1:extensionIndex]
-#     return fileName, extention
-
 def get_diff(img1, img2): #[32 ,32 ,3]
     img1 = np.array(img1)
     img2 = np.array(img2)
@@ -39,36 +27,29 @@ def get_diff(img1, img2): #[32 ,32 ,3]
     diff_img = np.array(diff_img)
     return diff_img.astype(np.uint8)
 
-# three ugly function
-
 def mapLabel(database, index):
-    cifar_10_labels = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
-    cifar_10_labels = np.array(cifar_10_labels)
-
-    if database == 'CIFAR-10':
-        return cifar_10_labels[int(index)]
-    else:
-        print("mapLabel, not cifar 10, in log_util")
-        return ''
+    prefix = database.lower()
+    fileName = './database/' + prefix + '_label'
+    f = open(fileName, 'r')
+    str = f.readlines()[int(index)]
+    f.close()
+    return str.split(',')[0].strip()
 
 
 def getNormValue(img, advImg, distance):
     norm_values = []
     for i in distance:
-        norm_values.append(i(img, advImg))
+        norm_values.append(i(img, advImg)[0])
     return norm_values
 
+def norm_presentation(norm, norm_value):
+    cnt = 0
+    pre_norm = {}
+    for i in norm:
+        pre_norm[i] = norm_value[cnt]
+        cnt += 1
+    return pre_norm
 
-
-import torch
-from torchvision import transforms
-transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize(
-        mean=[0.4914, 0.4822, 0.4465],
-        std=[0.2471, 0.2435, 0.2616]),
-])
-device = ('cuda' if torch.cuda.is_available() else 'cpu')
 def getCons(model, img):
     if np.max(img) > 1:
         img = img / 255
