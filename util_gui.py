@@ -47,7 +47,7 @@ class ImageInfo():
 # to change the user upload image from jpg/jpeg into pngs format
 # becase simpleGUI can only display .png or .gif images
 # newPath: image/tmp/ori_a.png
-# file_name: a.png
+# file_name
 def savePng(path, resolution, folder = 'images/tmp/', prefix = 'ori', new_extension = '.png'):
     if os.path.exists(path) == False:
         return '', ''
@@ -106,15 +106,17 @@ def getAdvPath(attacker: ImageAttacker, ori_image, label_id, new_map, based, fil
     window1['-adv_label-'].update(f'label: {imageInfo.mapLabel(adv_label_id[0])}')
 
 
-def updateRunning(window1):
+def updateRunning(window1, file_name):
     status = ['States: running   ', 'States: running.  ', 'States: running.. ', 'States: running...']
     cnt = 1
     pert_image_zoom, adv_image_zoom = None, None
     while window1['-t3-'].get()[0:18] in status:
         # update mid process
-        if os.path.exists(r'./images/tmp/diff_wkyTest.png'):
-            pert_image_zoom = convert_to_bytes(r'./images/tmp/diff_wkyTest.png', (200, 200))
-            adv_image_zoom = convert_to_bytes(r'./images/tmp/adv_wkyTest.png', (200, 200))
+        path1 = r'./images/tmp/diff_' + file_name + r'.png'
+        path2 = r'./images/tmp/adv_' + file_name + r'.png'
+        if os.path.exists(path1):
+            pert_image_zoom = convert_to_bytes(path1, (200, 200))
+            adv_image_zoom = convert_to_bytes(path2, (200, 200))
         window1['-pert_image-'].update(data=pert_image_zoom)
         window1['-adv_image-'].update(data=adv_image_zoom)
         window1['-t3-'].update(status[cnt])

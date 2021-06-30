@@ -10,10 +10,10 @@ logging.basicConfig(stream=sys.stdout,
                     datefmt='%Y/%m/%d %H:%M:%S')
 handler = logging.FileHandler("log.txt")
 handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.addHandler(logging.StreamHandler(sys.stdout))
+# formatter = logging.Formatter('%(asctime)s %(message)s')
+# handler.setFormatter(formatter)
+# logger.addHandler(handler)
+# logger.addHandler(logging.StreamHandler(sys.stdout))
 
 class LogManagement():
     def __init__(self,
@@ -62,19 +62,18 @@ class LogManagement():
                     '    Model: %s\n' % (self.modelName) +
                     '    Database: %s\n' % (self.databaseName) +
                     '***')
-        print('\n*** \n    Launching an attack to image %s\n' % (self.imageName) +
-              '    Norm: %s\n' % (self.norm) +
-              '    Attack type: %s\n' % (attackType) +
-              '    Original label: %s\n' % (self.oriLabelStr) + targetMsg +
-              '    Model: %s\n' % (self.modelName) +
-              '    Database: %s\n' % (self.databaseName) +
-              '***')
+        # print('\n*** \n    Launching an attack to image %s\n' % (self.imageName) +
+        #       '    Norm: %s\n' % (self.norm) +
+        #       '    Attack type: %s\n' % (attackType) +
+        #       '    Original label: %s\n' % (self.oriLabelStr) + targetMsg +
+        #       '    Model: %s\n' % (self.modelName) +
+        #       '    Database: %s\n' % (self.databaseName) +
+        #       '***')
         saveImage(self.img[0], self.imageName, self.extention, 'ori')
         saveImage(self.img[0] - self.img[0], self.imageName, self.extention, 'diff')
         saveImage(self.img[0], self.imageName, self.extention, 'adv')
 
     def imgUpdate(self, advImg, iter=-1):
-
         if self.isTarget:
             self.updateTarget(advImg, iter)
         else:
@@ -86,25 +85,25 @@ class LogManagement():
         cons = getCons(self.model, advImg[0])
         normValue = getNormValue(self.img, advImg, self.distance)
         if (iter <= 0):
-            logger.info('origin_con: %.4f, target_con: %.4f, %s: %.3f' % (
+            logger.info('origin_con: %.4f, target_con: %.4f, %s: %s' % (
             cons[int(self.oriLabel)], cons[int(self.target)], self.norm, normValue))
-            print('origin_con: %.4f, target_con: %.4f, %s: %.3f' % (
-            cons[int(self.oriLabel)], cons[int(self.target)], self.norm, normValue))
+            # print('origin_con: %.4f, target_con: %.4f, %s: %.3f' % (
+            # cons[int(self.oriLabel)], cons[int(self.target)], self.norm, normValue))
         else:
-            logger.info('[Iter: %7d] origin_con: %.4f, target_con: %.4f, %s: %.3f' % (
+            logger.info('[Iter: %7d] origin_con: %.4f, target_con: %.4f, %s: %s' % (
             iter, cons[int(self.oriLabel)], cons[int(self.target)], self.norm, normValue))
-            print('[Iter: %7d] origin_con: %.4f, target_con: %.4f, %s: %.3f' % (
-            iter, cons[int(self.oriLabel)], cons[int(self.target)], self.norm, normValue))
+            # print('[Iter: %7d] origin_con: %.4f, target_con: %.4f, %s: %.3f' % (
+            # iter, cons[int(self.oriLabel)], cons[int(self.target)], self.norm, normValue))
 
     def updateNonTarget(self, advImg, iter):
         cons = getCons(self.model, advImg[0])
-        normValue = getNormValue(self.img, advImg, self.norm)
+        normValue = getNormValue(self.img, advImg, self.distance)
         if (iter <= 0):
-            logger.info('origin_con: %.4f, %s: %.3f' % (cons[self.oriLabel], self.norm, normValue))
-            print('origin_con: %.4f, %s: %.3f' % (cons[self.oriLabel], self.norm, normValue))
+            logger.info('origin_con: %.4f, %s: %s' % (cons[self.oriLabel], self.norm, normValue))
+            # print('origin_con: %.4f, %s: %.3f' % (cons[self.oriLabel], self.norm, normValue))
         else:
-            logger.info('[Iter: %7d] origin_con: %.4f, %s: %.3f' % (iter, cons[self.oriLabel], self.norm, normValue))
-            print('[Iter: %7d] origin_con: %.4f, %s: %.3f' % (iter, cons[self.oriLabel], self.norm, normValue))
+            logger.info('[Iter: %7d] origin_con: %.4f, %s: %s' % (iter, cons[self.oriLabel], self.norm, normValue))
+            # print('[Iter: %7d] origin_con: %.4f, %s: %.3f' % (iter, cons[self.oriLabel], self.norm, normValue))
 
     def logEnd(self, advImg):
         if self.isTarget:
@@ -116,44 +115,44 @@ class LogManagement():
 
     def endTarget(self, advImg):
         cons = getCons(self.model, advImg[0])
-        normValue = getNormValue(self.img, advImg, self.norm)
+        normValue = getNormValue(self.img, advImg, self.distance)
         success = 'successed' if cons.argmax() == self.target else 'failed'
         logger.info('\n*** \n    End of the attack, it %s\n'
 
                     '    Origin_label: %s\n'
                     '    Target_label: %s\n'
                     '    Current label: %s\n'
-                    '    %s: %.3f\n'
+                    '    %s: %s\n'
                     '***' % (success, self.oriLabelStr,
                              mapLabel(self.databaseName, self.target),
                              mapLabel(self.databaseName, cons.argmax()),
                              self.norm, normValue))
-        print('\n*** \n    End of the attack, it %s\n'
-
-              '    Origin_label: %s\n'
-              '    Target_label: %s\n'
-              '    Current label: %s\n'
-              '    %s: %.3f\n'
-              '***' % (success, self.oriLabelStr,
-                       mapLabel(self.databaseName, self.target),
-                       mapLabel(self.databaseName, cons.argmax()),
-                       self.norm, normValue))
+        # print('\n*** \n    End of the attack, it %s\n'
+        #
+        #       '    Origin_label: %s\n'
+        #       '    Target_label: %s\n'
+        #       '    Current label: %s\n'
+        #       '    %s: %.3f\n'
+        #       '***' % (success, self.oriLabelStr,
+        #                mapLabel(self.databaseName, self.target),
+        #                mapLabel(self.databaseName, cons.argmax()),
+        #                self.norm, normValue))
 
     def endNonTarget(self, advImg):
         cons = getCons(self.model, advImg[0])
-        normValue = getNormValue(self.img, advImg, self.norm)
+        normValue = getNormValue(self.img, advImg, self.distance)
         success = 'successed' if cons.argmax() != self.oriLabel else 'failed'
         logger.info('\n*** \n    End of the attack, it %s\n'
                     '    Origin_label: %s\n'
                     '    Current label: %s\n'
-                    '    %s: %.3f\n'
+                    '    %s: %s\n'
                     '***' % (success, self.oriLabelStr,
                              mapLabel(self.databaseName, cons.argmax()),
                              self.norm, normValue))
-        print('\n*** \n    End of the attack, it %s\n'
-              '    Origin_label: %s\n'
-              '    Current label: %s\n'
-              '    %s: %.3f\n'
-              '***' % (success, self.oriLabelStr,
-                       mapLabel(self.databaseName, cons.argmax()),
-                       self.norm, normValue))
+        # print('\n*** \n    End of the attack, it %s\n'
+        #       '    Origin_label: %s\n'
+        #       '    Current label: %s\n'
+        #       '    %s: %.3f\n'
+        #       '***' % (success, self.oriLabelStr,
+        #                mapLabel(self.databaseName, cons.argmax()),
+        #                self.norm, normValue))

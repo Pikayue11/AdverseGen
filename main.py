@@ -260,7 +260,7 @@ while True:
             t1 = threading.Thread(target=gui.getAdvPath, args=(imageAttacker, reshaped_ori_image, ori_label_id, new_map, based, file_name, II, win1,))
             threads.append(t1)
             t1.start()
-            t2 = threading.Thread(target=gui.updateRunning, args=(win1,))
+            t2 = threading.Thread(target=gui.updateRunning, args=(win1, file_name,))
             threads.append(t2)
             t2.start()
         else:

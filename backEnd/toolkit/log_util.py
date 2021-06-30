@@ -52,12 +52,13 @@ def mapLabel(database, index):
         return ''
 
 
-
 def getNormValue(img, advImg, distance):
     norm_values = []
     for i in distance:
         norm_values.append(i(img, advImg))
     return norm_values
+
+
 
 import torch
 from torchvision import transforms
