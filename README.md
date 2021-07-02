@@ -1,6 +1,4 @@
-# AdverseGen: A Practical Tool for Generating
-Adversarial Examples to Deep Neural Networks
-Using Black-box Approaches
+# AdverseGen: A Practical Tool for Generating Adversarial Examples to Deep Neural Networks Using Black-box Approaches
 
 AdverseGen is a **Python toolbox** for adversarial robustness research. It can be invoked either by the graphical user interface (GUI) or command lines to generate adversarial examples in the black-box setting.
 
