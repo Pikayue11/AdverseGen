@@ -16,5 +16,4 @@ Also, the GUI of this tool is developed under PySimpleGUI 4.38.0 and pillow 7.2.
 pip install pillow PySimpleGUI
 ```
 
-### Installation
 
