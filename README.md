@@ -15,5 +15,18 @@ Also, the GUI of this tool is developed under PySimpleGUI 4.38.0 and pillow 7.2.
 ```shell
 pip install pillow PySimpleGUI
 ```
+## Citation
 
+If you use this reository in your work, please use this bibtex
+
+```
+@inprocedings{zhang2021adversegen,
+  title={AdverseGen: A Practical Tool for Generating Adversarial Examples to Deep Neural       Networks Using Black-box Approaches},
+  author={Zhang Keyuan and Wu Kaiyue and Chen Siyu},
+  booktitle={AI-2021: The Forty-first SGAI International Conference},
+  pages={accepted},
+  year={2021},
+  organization={SGAI}
+}
+```
 
